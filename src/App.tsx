@@ -7,8 +7,11 @@ import { Stage1 } from "./components/machines/stage1";
 type GameStore = {
   ticks: number;
   transactions: Decimal;
-  transactionsPerSecond: Decimal;
+  transactionsPerTick: Decimal;
   transactionAccumulator: Decimal;
+
+  // Getters
+  currentTransactionsPerTick: Decimal;
 
   // Upgrades
   transactionSpeedUpgrades: number;
@@ -19,7 +22,7 @@ type GameStore = {
   quantumStabilityUpgrades: number;
 
   setTicks: (ticks: number) => void;
-  settransactionsPerSecond: (transactionsPerSecond: number) => void;
+  setTransactionsPerTick: (transactionsPerTick: number) => void;
 
   buyTransactionSpeedUpgrade: () => void;
   buyTransactionValidationSpeedUpgrade: () => void;
@@ -34,7 +37,7 @@ type GameStore = {
 const useStore = create<GameStore>((set) => ({
   ticks: 0,
   transactions: new Decimal(0),
-  transactionsPerSecond: new Decimal(0.1),
+  transactionsPerTick: new Decimal(1.7),
   transactionAccumulator: new Decimal(0),
 
   transactionSpeedUpgrades: 0,
@@ -44,9 +47,13 @@ const useStore = create<GameStore>((set) => ({
   expandCurrencyUpgrades: 0,
   quantumStabilityUpgrades: 0,
 
+  get currentTransactionsPerTick() {
+    return this.transactionsPerTick.add(1 * this.transactionSpeedUpgrades);
+  },
+
   setTicks: (ticks: number) => set({ ticks: ticks }),
-  settransactionsPerSecond: (transactionsPerSecond: number) =>
-    set({ transactionsPerSecond: new Decimal(transactionsPerSecond) }),
+  setTransactionsPerTick: (transactionsPerTick: number) =>
+    set({ transactionsPerTick: new Decimal(transactionsPerTick) }),
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
@@ -83,20 +90,14 @@ const useStore = create<GameStore>((set) => ({
 
   startTick: () =>
     set((state) => {
-      const acc = new Decimal(state.transactionAccumulator).plus(
-        state.transactionsPerSecond,
+      const totalAccumulated = state.transactionAccumulator.plus(
+        state.currentTransactionsPerTick,
       );
-
-      if (acc.greaterThanOrEqualTo(1)) {
-        state.transactions = state.transactions.plus(
-          state.transactionsPerSecond.mul(10),
-        );
-      }
 
       return {
         ticks: state.ticks + 1,
-        transactions: state.transactions,
-        transactionAccumulator: acc.mod(1),
+        transactions: state.transactions.plus(totalAccumulated.floor()),
+        transactionAccumulator: totalAccumulated.mod(1),
       };
     }),
 }));
@@ -104,6 +105,12 @@ const useStore = create<GameStore>((set) => ({
 function App() {
   const ticks = useStore((state) => state.ticks);
   const transactions = useStore((state) => state.transactions);
+  const transactionSpeedUpgrades = useStore(
+    (state) => state.transactionSpeedUpgrades,
+  );
+  const transactionAccumulator = useStore(
+    (state) => state.transactionAccumulator,
+  );
   const startTick = useStore((state) => state.startTick);
   const buyTransactionSpeedUpgrade = useStore(
     (state) => state.buyTransactionSpeedUpgrade,
@@ -147,7 +154,17 @@ function App() {
       <p>
         Ticks: {ticks}
         <br />
+        Accumulator: {transactionAccumulator.toNumber()}
+        <br />
+        Transactions per tick:{" "}
+        {useStore().currentTransactionsPerTick.toNumber()}
+        <br />
         Transactions: {transactions.toNumber()}
+        <br />
+        <br />
+        Transaction upgrades:
+        <br />
+        Transaction speed: {transactionSpeedUpgrades}
       </p>
 
       <button
