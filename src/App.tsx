@@ -7,9 +7,12 @@ import Decimal from "decimal.js";
 type GameStore = {
   ticks: number;
   transactionsComplete: number;
+  transactionsPending: number;
   transactionsPerTick: Decimal;
   transactionAccumulator: Decimal;
-  transactionValidationSpeed: Decimal;
+  transactionValidationSpeed: GameStore["ticks"];
+
+  transactionQueue: [Decimal, EpochTimeStamp][];
 
   // Upgrades
   transactionSpeedUpgrades: number;
@@ -22,6 +25,9 @@ type GameStore = {
 
 type Actions = {
   setTicks: (ticks: GameStore["ticks"]) => void;
+
+  setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
+  // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 
   buyTransactionSpeedUpgrade: () => void;
   buyTransactionValidationSpeedUpgrade: () => void;
@@ -36,9 +42,12 @@ type Actions = {
 const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
+  transactionsPending: 0,
   transactionsPerTick: new Decimal(0.1),
   transactionAccumulator: new Decimal(0),
-  transactionValidationSpeed: new Decimal(5.0),
+  transactionValidationSpeed: 2000,
+
+  transactionQueue: [],
 
   transactionSpeedUpgrades: 0,
   transactionValidationSpeedUpgrades: 0,
@@ -47,7 +56,14 @@ const useStore = create<GameStore & Actions>((set) => ({
   expandCurrencyUpgrades: 0,
   quantumStabilityUpgrades: 0,
 
-  setTicks: (ticks: number) => set({ ticks: ticks }),
+  setTicks: (ticks: GameStore["ticks"]) => set({ ticks: ticks }),
+
+  setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
+    set(() => ({ transactionQueue: queue })),
+  // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) =>
+  //   set((state) => ({
+  //     transactionQueue: [...state.transactionQueue, transaction],
+  //   })),
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
@@ -84,14 +100,37 @@ const useStore = create<GameStore & Actions>((set) => ({
 
   startTick: () =>
     set((state) => {
+      let completedTransactionsAmount = new Decimal(0);
+      const currentTime: EpochTimeStamp = Date.now();
+
+      // Remove the pending transactions if their time has passed
+      const filteredQueue = state.transactionQueue.filter((transaction) => {
+        if (state.transactionValidationSpeed + transaction[1] < currentTime) {
+          completedTransactionsAmount = completedTransactionsAmount.plus(
+            transaction[0],
+          );
+
+          return false;
+        }
+
+        return true;
+      });
+
       const totalAccumulated = state.transactionAccumulator.plus(
         state.transactionsPerTick.add(1 * state.transactionSpeedUpgrades),
       );
 
+      state.setTransactionQueue([
+        ...filteredQueue,
+        [totalAccumulated, Date.now()],
+      ]);
+
       return {
         ticks: state.ticks + 1,
         transactionsComplete:
-          state.transactionsComplete + totalAccumulated.floor().toNumber(),
+          state.transactionsComplete +
+          completedTransactionsAmount.floor().toNumber(),
+        transactionsPending: filteredQueue.length,
         transactionAccumulator: totalAccumulated.mod(1),
       };
     }),
@@ -109,6 +148,7 @@ function useCurrentTransactionsPerTick(): Decimal {
 function App() {
   const ticks = useStore((state) => state.ticks);
   const transactionsComplete = useStore((state) => state.transactionsComplete);
+  const transactionsPending = useStore((state) => state.transactionsPending);
   const transactionSpeedUpgrades = useStore(
     (state) => state.transactionSpeedUpgrades,
   );
@@ -164,7 +204,9 @@ function App() {
         <br />
         Transactions per tick: {currentTransactionsPerTick.toNumber()}
         <br />
-        Transactions: {transactionsComplete}
+        Transactions complete: {transactionsComplete}
+        <br />
+        Transactions pending: {transactionsPending}
         <br />
         <br />
         Transaction upgrades:
