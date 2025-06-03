@@ -22,7 +22,7 @@ export const Stage1 = (props: {
     string,
   ];
 }) => (
-  <p>
+  <p style={{ margin: 0 }}>
     [{props.data[0]}]‎ ‎ ‎ ‎ ‎ ---&gt; ‎ ‎ ‎ ‎ ‎ ---&gt;‎ ‎ ‎ ‎ ‎ [
     {props.data[0]}]
     <br />[{props.data[0]}]‎ ‎ ‎ ‎ ‎ ---&gt; ‎ ‎ ‎ ‎ ‎ ---&gt;‎ ‎ ‎ ‎ ‎ [
