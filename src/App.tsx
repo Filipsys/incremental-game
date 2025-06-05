@@ -57,7 +57,7 @@ function App() {
     return () => clearInterval(intervalLoop);
   }, [startTick]);
 
-  console.log(createTransactionDetails());
+  // console.log(createTransactionDetails());
 
   return (
     <div style={{ padding: "1em" }}>

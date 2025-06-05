@@ -9,7 +9,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   transactionsPending: 0,
   transactionsPerTick: new Decimal(0.1),
   transactionAccumulator: new Decimal(0),
-  transactionValidationSpeed: 2000,
+  transactionValidationSpeed: 200,
 
   funds: new Decimal(0),
   maxTransferAmount: 100,
@@ -72,17 +72,21 @@ export const useStore = create<GameStore & Actions>((set) => ({
   startTick: () =>
     set((state) => {
       let completedTransactionsAmount = new Decimal(0);
+      let completedTransactionsCount = 0;
       const currentTime: EpochTimeStamp = Date.now();
 
-      // Remove the pending transactions if their time has passed
+      // Remove the pending transactions if their time has passed & add
+      // the completed transaction count to the completed transaction amount
       const filteredQueue = state.transactionQueue.filter((transaction) => {
         if (state.transactionValidationSpeed + transaction[1] < currentTime) {
           completedTransactionsAmount = completedTransactionsAmount.plus(
             transaction[0],
           );
 
+          completedTransactionsCount++;
+
           // I'm most definitely sure this is incorrect
-          state.addFunds(new Decimal(10).mul(state.instantTransferFee));
+          // state.addFunds(new Decimal(10).mul(state.instantTransferFee));
 
           return false;
         }
@@ -94,10 +98,23 @@ export const useStore = create<GameStore & Actions>((set) => ({
         state.transactionsPerTick.add(1 * state.transactionSpeedUpgrades),
       );
 
-      state.setTransactionQueue([
-        ...filteredQueue,
-        [totalAccumulated, Date.now()],
-      ]);
+      // state.setTransactionQueue([
+      //   ...filteredQueue,
+      //   [totalAccumulated, Date.now()],
+      // ]);
+
+      // Add the funds according to the completed transactions from this tick
+      // maxTransferAmount is a placeholder. The amounts will be created later
+
+      console.log(completedTransactionsCount);
+      console.log(state.transactionQueue.toString());
+
+      let newFunds: Decimal = new Decimal(0);
+      if (completedTransactionsCount > 0) {
+        newFunds = new Decimal(state.maxTransferAmount)
+          .mul(state.instantTransferFee)
+          .mul(completedTransactionsCount);
+      }
 
       return {
         ticks: state.ticks + 1,
@@ -106,6 +123,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
           completedTransactionsAmount.floor().toNumber(),
         transactionsPending: filteredQueue.length,
         transactionAccumulator: totalAccumulated.mod(1),
+        transactionQueue: [...filteredQueue, [totalAccumulated, Date.now()]],
+        funds: state.funds.plus(newFunds),
       };
     }),
 }));
