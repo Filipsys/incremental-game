@@ -31,6 +31,9 @@ export interface Actions {
   removeFunds: (funds: GameStore["funds"]) => void;
   setFunds: (funds: GameStore["funds"]) => void;
 
+  setTransactionAccumulator: (
+    accumulatedTransactions: GameStore["transactionAccumulator"],
+  ) => void;
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
   // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 

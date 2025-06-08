@@ -52,7 +52,7 @@ function App() {
 
   // Game tick loop
   useEffect(() => {
-    const intervalLoop = setInterval(() => startTick(), 100);
+    const intervalLoop = setInterval(() => startTick(), 1000);
 
     return () => clearInterval(intervalLoop);
   }, [startTick]);
@@ -110,10 +110,10 @@ function App() {
       <button
         type="button"
         onClick={() => buyTransactionSpeedUpgrade()}
-        disabled={transactionsComplete - 40 < 0}
+        disabled={funds.minus(40).lessThan(0)}
       >
         <p>Transaction speed upgrade</p>
-        <p>40tC</p>
+        <p>40 EUR</p>
       </button>
     </div>
   );

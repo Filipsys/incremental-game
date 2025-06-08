@@ -7,9 +7,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
   transactionsPending: 0,
-  transactionsPerTick: new Decimal(0.1),
+  transactionsPerTick: new Decimal(2.1),
   transactionAccumulator: new Decimal(0),
-  transactionValidationSpeed: 200,
+  transactionValidationSpeed: 4000,
 
   funds: new Decimal(0),
   maxTransferAmount: 100,
@@ -33,6 +33,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
     set((state) => ({ funds: state.funds.minus(funds) })),
   setFunds: (funds: GameStore["funds"]) => set(() => ({ funds: funds })),
 
+  setTransactionAccumulator: (
+    transactionsAccumulated: GameStore["transactionAccumulator"],
+  ) => set(() => ({ transactionAccumulator: transactionsAccumulated })),
   setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
     set(() => ({ transactionQueue: queue })),
 
@@ -83,8 +86,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
             transaction[0],
           );
 
-          completedTransactionsCount++;
-
           // I'm most definitely sure this is incorrect
           // state.addFunds(new Decimal(10).mul(state.instantTransferFee));
 
@@ -94,27 +95,58 @@ export const useStore = create<GameStore & Actions>((set) => ({
         return true;
       });
 
+      // Gather the total accumulated transactions from the current transaction amount + the transaction amount from this tick
       const totalAccumulated = state.transactionAccumulator.plus(
         state.transactionsPerTick.add(1 * state.transactionSpeedUpgrades),
       );
 
-      // state.setTransactionQueue([
-      //   ...filteredQueue,
-      //   [totalAccumulated, Date.now()],
-      // ]);
+      console.log("Total accumulated: ", totalAccumulated.toNumber());
+
+      // Check if the accumulated transaction amount is higher than 1, if so, create a new transaction, else, skip and add to accumulated transaction amount
+      if (
+        state.transactionAccumulator
+          .plus(totalAccumulated)
+          .greaterThanOrEqualTo(1)
+      ) {
+        completedTransactionsCount =
+          completedTransactionsCount + totalAccumulated.floor().toNumber();
+
+        totalAccumulated.minus(totalAccumulated.mod(1));
+      } else {
+        state.setTransactionAccumulator(
+          state.transactionAccumulator.plus(totalAccumulated),
+        );
+      }
+
+      console.log(
+        "Total completed transactions count: ",
+        completedTransactionsCount,
+      );
 
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
-
-      console.log(completedTransactionsCount);
-      console.log(state.transactionQueue.toString());
-
       let newFunds: Decimal = new Decimal(0);
       if (completedTransactionsCount > 0) {
         newFunds = new Decimal(state.maxTransferAmount)
           .mul(state.instantTransferFee)
           .mul(completedTransactionsCount);
       }
+
+      // Add the new transactions to the transaction queue
+      let newTransactionQueue: [Decimal, EpochTimeStamp][] = [...filteredQueue];
+      if (totalAccumulated.greaterThanOrEqualTo(1)) {
+        const temporaryArray: [Decimal, number][] = [];
+
+        for (let i = 0; i < totalAccumulated.floor().toNumber(); i++) {
+          temporaryArray.push([new Decimal(1), Date.now()]);
+        }
+
+        newTransactionQueue = [...filteredQueue, ...temporaryArray];
+      }
+
+      console.log("Transactions queue: ", newTransactionQueue);
+      console.log("New transactions count: ", completedTransactionsCount);
+      console.log(state.transactionAccumulator.toNumber());
 
       return {
         ticks: state.ticks + 1,
@@ -123,7 +155,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
           completedTransactionsAmount.floor().toNumber(),
         transactionsPending: filteredQueue.length,
         transactionAccumulator: totalAccumulated.mod(1),
-        transactionQueue: [...filteredQueue, [totalAccumulated, Date.now()]],
+        transactionQueue: newTransactionQueue,
         funds: state.funds.plus(newFunds),
       };
     }),
