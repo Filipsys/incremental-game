@@ -1,5 +1,10 @@
 import type Decimal from "decimal.js";
 
+export interface Transaction {
+  transactionAmount: Decimal;
+  timestamp: EpochTimeStamp;
+}
+
 export interface GameStore {
   ticks: number;
   transactionsComplete: number;
@@ -12,7 +17,7 @@ export interface GameStore {
   maxTransferAmount: number;
   instantTransferFee: Decimal;
 
-  transactionQueue: [Decimal, EpochTimeStamp][];
+  transactionQueue: Transaction[];
   supportedCurrencies: string[];
 
   // Upgrades

@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { create } from "zustand";
 
-import type { GameStore, Actions } from "../types/store";
+import type { GameStore, Actions, Transaction } from "../types/store";
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
@@ -41,34 +41,34 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       transactionSpeedUpgrades: state.transactionSpeedUpgrades + 1,
     })),
   buyTransactionValidationSpeedUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       transactionValidationSpeedUpgrades:
         state.transactionValidationSpeedUpgrades + 1,
     })),
   buyTransactionMultithreadingUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       transactionMultithreadingUpgrades:
         state.transactionMultithreadingUpgrades + 1,
     })),
   buyMaxLoanAmountUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       maxLoanAmountUpgrades: state.maxLoanAmountUpgrades + 1,
     })),
   buyExpandCurrencyUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       expandCurrencyUpgrades: state.expandCurrencyUpgrades + 1,
     })),
   buyQuantumStabilityUpgrade: () =>
     set((state) => ({
-      transactionsComplete: state.transactionsComplete - 40,
+      funds: state.funds.minus(40),
       quantumStabilityUpgrades: state.quantumStabilityUpgrades + 1,
     })),
 
@@ -81,13 +81,13 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // Remove the pending transactions if their time has passed & add
       // the completed transaction count to the completed transaction amount
       const filteredQueue = state.transactionQueue.filter((transaction) => {
-        if (state.transactionValidationSpeed + transaction[1] < currentTime) {
+        if (
+          state.transactionValidationSpeed + transaction.timestamp <
+          currentTime
+        ) {
           completedTransactionsAmount = completedTransactionsAmount.plus(
-            transaction[0],
+            transaction.transactionAmount,
           );
-
-          // I'm most definitely sure this is incorrect
-          // state.addFunds(new Decimal(10).mul(state.instantTransferFee));
 
           return false;
         }
@@ -133,12 +133,15 @@ export const useStore = create<GameStore & Actions>((set) => ({
       }
 
       // Add the new transactions to the transaction queue
-      let newTransactionQueue: [Decimal, EpochTimeStamp][] = [...filteredQueue];
+      let newTransactionQueue: Transaction[] = [...filteredQueue];
       if (totalAccumulated.greaterThanOrEqualTo(1)) {
-        const temporaryArray: [Decimal, number][] = [];
+        const temporaryArray: Transaction[] = [];
 
         for (let i = 0; i < totalAccumulated.floor().toNumber(); i++) {
-          temporaryArray.push([new Decimal(1), Date.now()]);
+          temporaryArray.push({
+            transactionAmount: new Decimal(1),
+            timestamp: Date.now(),
+          });
         }
 
         newTransactionQueue = [...filteredQueue, ...temporaryArray];
