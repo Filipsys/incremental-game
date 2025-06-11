@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { create } from "zustand";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
+import { debug } from "../utils";
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
@@ -100,7 +101,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         state.transactionsPerTick.add(1 * state.transactionSpeedUpgrades),
       );
 
-      console.log("Total accumulated: ", totalAccumulated.toNumber());
+      debug(`Total accumulated: ${totalAccumulated.toNumber()}`);
 
       // Check if the accumulated transaction amount is higher than 1, if so, create a new transaction, else, skip and add to accumulated transaction amount
       if (
@@ -118,9 +119,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
         );
       }
 
-      console.log(
-        "Total completed transactions count: ",
-        completedTransactionsCount,
+      debug(
+        `Total completed transactions count: ${completedTransactionsCount}`,
       );
 
       // Add the funds according to the completed transactions from this tick
@@ -147,9 +147,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
         newTransactionQueue = [...filteredQueue, ...temporaryArray];
       }
 
-      console.log("Transactions queue: ", newTransactionQueue);
-      console.log("New transactions count: ", completedTransactionsCount);
-      console.log(state.transactionAccumulator.toNumber());
+      debug(`Transactions queue: ${newTransactionQueue}`);
+      debug(`New transactions count: ${completedTransactionsCount}`);
+      debug(state.transactionAccumulator.toNumber());
 
       return {
         ticks: state.ticks + 1,
