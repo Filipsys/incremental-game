@@ -1,14 +1,14 @@
 import Decimal from "decimal.js";
 import { create } from "zustand";
+import { debug } from "../utils";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
-import { debug } from "../utils";
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
   transactionsPending: 0,
-  transactionsPerTick: new Decimal(2.1),
+  transactionsPerTick: new Decimal(0.1),
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: 4000,
 
@@ -79,6 +79,10 @@ export const useStore = create<GameStore & Actions>((set) => ({
       let completedTransactionsCount = 0;
       const currentTime: EpochTimeStamp = Date.now();
 
+      // I will probably want to remove this main loop feature
+      // and switch the array with something less resource-intensive
+      // at larger lengths.
+      //
       // Remove the pending transactions if their time has passed & add
       // the completed transaction count to the completed transaction amount
       const filteredQueue = state.transactionQueue.filter((transaction) => {
@@ -86,9 +90,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
           state.transactionValidationSpeed + transaction.timestamp <
           currentTime
         ) {
-          completedTransactionsAmount = completedTransactionsAmount.plus(
-            transaction.transactionAmount,
-          );
+          completedTransactionsAmount = completedTransactionsAmount.plus(1);
+
+          completedTransactionsCount++;
 
           return false;
         }
@@ -109,8 +113,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
           .plus(totalAccumulated)
           .greaterThanOrEqualTo(1)
       ) {
-        completedTransactionsCount =
-          completedTransactionsCount + totalAccumulated.floor().toNumber();
+        // completedTransactionsCount =
+        //   completedTransactionsCount + totalAccumulated.floor().toNumber();
 
         totalAccumulated.minus(totalAccumulated.mod(1));
       } else {
@@ -127,29 +131,25 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // maxTransferAmount is a placeholder. The amounts will be created later
       let newFunds: Decimal = new Decimal(0);
       if (completedTransactionsCount > 0) {
-        newFunds = new Decimal(state.maxTransferAmount)
+        newFunds = new Decimal(10)
           .mul(state.instantTransferFee)
           .mul(completedTransactionsCount);
       }
 
       // Add the new transactions to the transaction queue
-      let newTransactionQueue: Transaction[] = [...filteredQueue];
-      if (totalAccumulated.greaterThanOrEqualTo(1)) {
-        const temporaryArray: Transaction[] = [];
+      const newTransactionQueue: Transaction[] = [...filteredQueue];
 
+      if (totalAccumulated.greaterThanOrEqualTo(1)) {
         for (let i = 0; i < totalAccumulated.floor().toNumber(); i++) {
-          temporaryArray.push({
-            transactionAmount: new Decimal(1),
+          newTransactionQueue.push({
+            // transactionAmount: new Decimal(1),
             timestamp: Date.now(),
           });
         }
-
-        newTransactionQueue = [...filteredQueue, ...temporaryArray];
       }
 
       debug(`Transactions queue: ${newTransactionQueue}`);
       debug(`New transactions count: ${completedTransactionsCount}`);
-      debug(state.transactionAccumulator.toNumber());
 
       return {
         ticks: state.ticks + 1,

@@ -1,7 +1,7 @@
 import type Decimal from "decimal.js";
 
 export interface Transaction {
-  transactionAmount: Decimal;
+  // transactionAmount: Decimal;
   timestamp: EpochTimeStamp;
 }
 
