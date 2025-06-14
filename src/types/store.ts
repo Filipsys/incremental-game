@@ -1,9 +1,6 @@
 import type Decimal from "decimal.js";
 
-export interface Transaction {
-  // transactionAmount: Decimal;
-  timestamp: EpochTimeStamp;
-}
+export type Transaction = EpochTimeStamp;
 
 export interface GameStore {
   ticks: number;

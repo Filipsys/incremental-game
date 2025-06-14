@@ -52,7 +52,7 @@ function App() {
 
   // Game tick loop
   useEffect(() => {
-    const intervalLoop = setInterval(() => startTick(), 1000);
+    const intervalLoop = setInterval(() => startTick(), 100);
 
     return () => clearInterval(intervalLoop);
   }, [startTick]);

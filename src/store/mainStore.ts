@@ -8,7 +8,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
   transactionsPending: 0,
-  transactionsPerTick: new Decimal(0.1),
+  transactionsPerTick: new Decimal(0.02),
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: 4000,
 
@@ -75,9 +75,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   startTick: () =>
     set((state) => {
-      let completedTransactionsAmount = new Decimal(0);
-      let completedTransactionsCount = 0;
       const currentTime: EpochTimeStamp = Date.now();
+      let completedTransactionsCount = 0;
 
       // I will probably want to remove this main loop feature
       // and switch the array with something less resource-intensive
@@ -86,12 +85,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // Remove the pending transactions if their time has passed & add
       // the completed transaction count to the completed transaction amount
       const filteredQueue = state.transactionQueue.filter((transaction) => {
-        if (
-          state.transactionValidationSpeed + transaction.timestamp <
-          currentTime
-        ) {
-          completedTransactionsAmount = completedTransactionsAmount.plus(1);
-
+        if (state.transactionValidationSpeed + transaction < currentTime) {
           completedTransactionsCount++;
 
           return false;
@@ -141,10 +135,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       if (totalAccumulated.greaterThanOrEqualTo(1)) {
         for (let i = 0; i < totalAccumulated.floor().toNumber(); i++) {
-          newTransactionQueue.push({
-            // transactionAmount: new Decimal(1),
-            timestamp: Date.now(),
-          });
+          newTransactionQueue.push(Date.now());
         }
       }
 
@@ -154,8 +145,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
       return {
         ticks: state.ticks + 1,
         transactionsComplete:
-          state.transactionsComplete +
-          completedTransactionsAmount.floor().toNumber(),
+          state.transactionsComplete + completedTransactionsCount,
         transactionsPending: filteredQueue.length,
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
