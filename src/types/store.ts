@@ -8,22 +8,26 @@ export interface GameStore {
   transactionsPending: number;
   transactionsPerTick: Decimal;
   transactionAccumulator: Decimal;
-  transactionValidationSpeed: GameStore["ticks"];
+  transactionValidationSpeed: Decimal;
 
   funds: Decimal;
   maxTransferAmount: number;
   instantTransferFee: Decimal;
 
+  transactionQueueAccumulator: Decimal;
+  transactionQueueAmount: number;
+  transactionQueueThreshold: number;
   transactionQueue: Transaction[];
+
   supportedCurrencies: string[];
 
   // Upgrades
   transactionSpeedUpgrades: number;
   transactionValidationSpeedUpgrades: number;
-  transactionMultithreadingUpgrades: number;
-  maxLoanAmountUpgrades: number;
-  expandCurrencyUpgrades: number;
-  quantumStabilityUpgrades: number;
+  // transactionMultithreadingUpgrades: number;
+  // maxLoanAmountUpgrades: number;
+  // expandCurrencyUpgrades: number;
+  // quantumStabilityUpgrades: number;
 }
 
 export interface Actions {
@@ -36,15 +40,17 @@ export interface Actions {
   setTransactionAccumulator: (
     accumulatedTransactions: GameStore["transactionAccumulator"],
   ) => void;
+
+  increaseTransactionQueueAmount: () => void;
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
   // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 
   buyTransactionSpeedUpgrade: () => void;
   buyTransactionValidationSpeedUpgrade: () => void;
-  buyTransactionMultithreadingUpgrade: () => void;
-  buyMaxLoanAmountUpgrade: () => void;
-  buyExpandCurrencyUpgrade: () => void;
-  buyQuantumStabilityUpgrade: () => void;
+  // buyTransactionMultithreadingUpgrade: () => void;
+  // buyMaxLoanAmountUpgrade: () => void;
+  // buyExpandCurrencyUpgrade: () => void;
+  // buyQuantumStabilityUpgrade: () => void;
 
   startTick: () => void;
 }

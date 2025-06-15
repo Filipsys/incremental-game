@@ -39,6 +39,9 @@ function App() {
   const currentTransactionsPerTick = useCurrentTransactionsPerTick();
   const transactionsComplete = useStore((state) => state.transactionsComplete);
   const transactionsPending = useStore((state) => state.transactionsPending);
+  const transactionValidationSpeed = useStore(
+    (state) => state.transactionValidationSpeed,
+  );
   const transactionSpeedUpgrades = useStore(
     (state) => state.transactionSpeedUpgrades,
   );
@@ -46,8 +49,14 @@ function App() {
     (state) => state.transactionAccumulator,
   );
   const startTick = useStore((state) => state.startTick);
+  const transactionValidationSpeedUpgrades = useStore(
+    (state) => state.transactionValidationSpeedUpgrades,
+  );
   const buyTransactionSpeedUpgrade = useStore(
     (state) => state.buyTransactionSpeedUpgrade,
+  );
+  const buyTransactionValidationSpeed = useStore(
+    (state) => state.buyTransactionValidationSpeedUpgrade,
   );
 
   // Game tick loop
@@ -95,6 +104,16 @@ function App() {
         <br />
         Transactions per tick: {currentTransactionsPerTick.toNumber()}
         <br />
+        Transaction validation speed:{" "}
+        {transactionValidationSpeed
+          .sub(
+            transactionValidationSpeed
+              .mul(0.01)
+              .mul(transactionValidationSpeedUpgrades),
+          )
+          .toNumber()}
+        ms
+        <br />
         Transactions complete: {transactionsComplete}
         <br />
         Transactions pending: {transactionsPending}
@@ -105,6 +124,8 @@ function App() {
         Transaction upgrades:
         <br />
         Transaction speed: {transactionSpeedUpgrades}
+        <br />
+        Transaction validation speed: {transactionValidationSpeedUpgrades}
       </p>
 
       <button
@@ -114,6 +135,14 @@ function App() {
       >
         <p>Transaction speed upgrade</p>
         <p>40 EUR</p>
+      </button>
+      <button
+        type="button"
+        onClick={() => buyTransactionValidationSpeed()}
+        disabled={funds.minus(120).lessThan(0)}
+      >
+        <p>Transaction validation speed upgrade</p>
+        <p>120 EUR</p>
       </button>
     </div>
   );
