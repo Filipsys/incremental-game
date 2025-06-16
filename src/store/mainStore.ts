@@ -8,7 +8,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
   transactionsPending: 0,
-  transactionsPerTick: new Decimal(20.02), // 0.02
+  transactionsPerTick: new Decimal(200000.92), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
 
@@ -45,6 +45,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
     set((state) => ({
       transactionQueueAmount: state.transactionQueueAmount * 2,
     })),
+  setTransactionQueueThreshold: (
+    threshold: GameStore["transactionQueueThreshold"],
+  ) => set({ transactionQueueThreshold: threshold }),
   setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
     set(() => ({ transactionQueue: queue })),
 
@@ -152,6 +155,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // increase the transactions amount in the queue
       if (state.transactionQueue.length > state.transactionQueueThreshold) {
         state.increaseTransactionQueueAmount();
+        state.setTransactionQueueThreshold(state.transactionQueueThreshold * 2);
 
         debug(`!!! Transaction queue amount: ${state.transactionQueueAmount}`);
       }

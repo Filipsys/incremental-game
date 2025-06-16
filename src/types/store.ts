@@ -42,6 +42,9 @@ export interface Actions {
   ) => void;
 
   increaseTransactionQueueAmount: () => void;
+  setTransactionQueueThreshold: (
+    threshold: GameStore["transactionQueueThreshold"],
+  ) => void;
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
   // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 

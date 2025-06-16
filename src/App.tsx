@@ -48,6 +48,13 @@ function App() {
   const transactionAccumulator = useStore(
     (state) => state.transactionAccumulator,
   );
+  const transactionQueue = useStore((state) => state.transactionQueue);
+  const transactionQueueThreshold = useStore(
+    (state) => state.transactionQueueThreshold,
+  );
+  const transactionQueueAmount = useStore(
+    (state) => state.transactionQueueAmount,
+  );
   const startTick = useStore((state) => state.startTick);
   const transactionValidationSpeedUpgrades = useStore(
     (state) => state.transactionValidationSpeedUpgrades,
@@ -103,6 +110,12 @@ function App() {
         Accumulator: {transactionAccumulator.toNumber()}
         <br />
         Transactions per tick: {currentTransactionsPerTick.toNumber()}
+        <br />
+        Transaction queue amount: {transactionQueueAmount}
+        <br />
+        Current transaction queue length: {transactionQueue.length}
+        <br />
+        Transaction queue threshold: {transactionQueueThreshold}
         <br />
         Transaction validation speed:{" "}
         {transactionValidationSpeed
