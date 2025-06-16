@@ -8,7 +8,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: 0,
   transactionsPending: 0,
-  transactionsPerTick: new Decimal(200000.92), // 0.02
+  transactionsPerTick: new Decimal(20.02), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
 

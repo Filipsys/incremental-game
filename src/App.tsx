@@ -5,6 +5,7 @@ import { Stage1 } from "./components/machines/Stage1";
 import type Decimal from "decimal.js";
 import type { TransctionDetails } from "./types/main";
 import { NAMES, SURNAMES } from "./assets/static";
+import { Debug } from "./components/Debug";
 
 function useCurrentTransactionsPerTick(): Decimal {
   const transactionsPerTick = useStore((state) => state.transactionsPerTick);
@@ -77,6 +78,8 @@ function App() {
 
   return (
     <div style={{ padding: "1em" }}>
+      <Debug />
+
       <pre style={{ fontFamily: "monospace", margin: 0 }}>
         <Stage1
           data={[
