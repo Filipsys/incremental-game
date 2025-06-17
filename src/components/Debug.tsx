@@ -3,6 +3,12 @@ import { useStore } from "../store/mainStore";
 
 export const Debug: React.FC = () => {
   const setFunds = useStore((state) => state.setFunds);
+  const setTransactionSpeedUpgrade = useStore(
+    (state) => state.setTransactionSpeedUpgrade,
+  );
+  const setTransactionValidationSpeed = useStore(
+    (state) => state.setTransactionValidationSpeedUpgrade,
+  );
 
   return (
     <div
@@ -16,15 +22,9 @@ export const Debug: React.FC = () => {
     >
       <p>Debug menu</p>
 
-      {/* <div>
-        <label htmlFor="tpt">Transactions per tick: </label>
-        <input name="tpt" type="number" />
-      </div> */}
-
       <div>
-        <label htmlFor="tpt">Funds: </label>
+        <label htmlFor="">Funds: </label>
         <input
-          name="tpt"
           type="number"
           onChange={(event) => {
             if (event.currentTarget.value !== "") {
@@ -36,8 +36,26 @@ export const Debug: React.FC = () => {
 
       <p>Upgrades:</p>
       <div>
-        <label htmlFor="tpt">Transaction speed: </label>
-        <input name="tpt" type="number" />
+        <label htmlFor="">Transaction speed: </label>
+        <input
+          type="number"
+          onChange={(event) => {
+            if (event.currentTarget.value !== "") {
+              setTransactionSpeedUpgrade(Number(event.currentTarget.value));
+            }
+          }}
+        />
+      </div>
+      <div>
+        <label htmlFor="">Transaction validation speed: </label>
+        <input
+          type="number"
+          onChange={(event) => {
+            if (event.currentTarget.value !== "") {
+              setTransactionValidationSpeed(Number(event.currentTarget.value));
+            }
+          }}
+        />
       </div>
     </div>
   );

@@ -56,11 +56,20 @@ export const useStore = create<GameStore & Actions>((set) => ({
       funds: state.funds.minus(40),
       transactionSpeedUpgrades: state.transactionSpeedUpgrades + 1,
     })),
+  setTransactionSpeedUpgrade: (amount: number) =>
+    set((state) => ({
+      transactionSpeedUpgrades: state.transactionSpeedUpgrades + amount,
+    })),
   buyTransactionValidationSpeedUpgrade: () =>
     set((state) => ({
       funds: state.funds.minus(120),
       transactionValidationSpeedUpgrades:
         state.transactionValidationSpeedUpgrades + 1,
+    })),
+  setTransactionValidationSpeedUpgrade: (amount: number) =>
+    set((state) => ({
+      transactionValidationSpeedUpgrades:
+        state.transactionValidationSpeedUpgrades + amount,
     })),
   // buyTransactionMultithreadingUpgrade: () =>
   //   set((state) => ({
@@ -155,7 +164,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // increase the transactions amount in the queue
       if (state.transactionQueue.length > state.transactionQueueThreshold) {
         state.increaseTransactionQueueAmount();
-        state.setTransactionQueueThreshold(state.transactionQueueThreshold * 2);
+        state.setTransactionQueueThreshold(
+          Math.round(state.transactionQueueThreshold * 1.1),
+        );
 
         debug(`!!! Transaction queue amount: ${state.transactionQueueAmount}`);
       }

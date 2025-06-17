@@ -49,7 +49,9 @@ export interface Actions {
   // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 
   buyTransactionSpeedUpgrade: () => void;
+  setTransactionSpeedUpgrade: (amount: number) => void;
   buyTransactionValidationSpeedUpgrade: () => void;
+  setTransactionValidationSpeedUpgrade: (amount: number) => void;
   // buyTransactionMultithreadingUpgrade: () => void;
   // buyMaxLoanAmountUpgrade: () => void;
   // buyExpandCurrencyUpgrade: () => void;
