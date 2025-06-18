@@ -1,3 +1,5 @@
+import type Decimal from "decimal.js";
+
 export interface TransctionDetails {
   senderID: string;
   senderName: string;
@@ -12,4 +14,9 @@ export interface TransctionDetails {
   transactionAmount: number;
   currency: string;
   timestamp: EpochTimeStamp;
+}
+
+export interface customBigNumber {
+  base: Decimal;
+  exponent: bigint;
 }
