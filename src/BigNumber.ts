@@ -3,8 +3,7 @@ import { Decimal } from "decimal.js";
 import type { customBigNumber } from "./types/main";
 
 // Methods needed:
-// toLiteral()
-// minus()
+// toNamed()
 export class BigNumber {
   base: customBigNumber["base"];
   exponent: customBigNumber["exponent"];
@@ -25,24 +24,43 @@ export class BigNumber {
     );
   }
 
+  // These might lose precision if the larger exponent is picked
   add(number: BigNumber): BigNumber {
     if (this.exponent === number.exponent) {
       return new BigNumber(this.base.add(number.base), this.exponent);
     }
 
     const exponentDifference = this.exponent - number.exponent;
+    let newBase: Decimal;
 
     if (exponentDifference > 0n) {
       const scale = new Decimal(10).pow(exponentDifference.toString());
-      const newBase = this.base.add(number.base.div(scale));
-
-      return new BigNumber(newBase, this.exponent);
+      newBase = this.base.add(number.base.div(scale));
     } else {
       const scale = new Decimal(10).pow(-exponentDifference.toString());
-      const newBase = this.base.div(scale).add(number.base);
-
-      return new BigNumber(newBase, this.exponent);
+      newBase = this.base.div(scale).add(number.base);
     }
+
+    return new BigNumber(newBase, this.exponent);
+  }
+
+  subtract(number: BigNumber): BigNumber {
+    if (this.exponent === number.exponent) {
+      return new BigNumber(this.base.minus(number.base), this.exponent);
+    }
+
+    const exponentDifference = this.exponent - number.exponent;
+    let newBase: Decimal;
+
+    if (exponentDifference > 0n) {
+      const scale = new Decimal(10).pow(exponentDifference.toString());
+      newBase = this.base.minus(number.base.div(scale));
+    } else {
+      const scale = new Decimal(10).pow(-exponentDifference.toString());
+      newBase = this.base.div(scale).minus(number.base);
+    }
+
+    return new BigNumber(newBase, this.exponent);
   }
 
   lessThan(number: BigNumber): boolean {
