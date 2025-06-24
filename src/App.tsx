@@ -6,6 +6,7 @@ import type Decimal from "decimal.js";
 import type { TransctionDetails } from "./types/main";
 import { NAMES, SURNAMES } from "./assets/static";
 import { Debug } from "./components/Debug";
+import { BigNumber } from "./BigNumber";
 
 function useCurrentTransactionsPerTick(): Decimal {
   const transactionsPerTick = useStore((state) => state.transactionsPerTick);
@@ -69,12 +70,15 @@ function App() {
 
   // Game tick loop
   useEffect(() => {
-    const intervalLoop = setInterval(() => startTick(), 100);
+    const intervalLoop = setInterval(() => startTick(), 1000);
 
     return () => clearInterval(intervalLoop);
   }, [startTick]);
 
   // console.log(createTransactionDetails());
+
+  const number1 = new BigNumber(1, 19683n);
+  const number2 = new BigNumber(2.3, 1683n);
 
   return (
     <div style={{ padding: "1em" }}>
@@ -106,6 +110,18 @@ function App() {
           ]}
         />
       </pre>
+
+      <p>
+        Number 1: {number1.toScientific()} {number1.toNamed()}
+        <br />
+        Number 2: {number2.toScientific()} {number2.toNamed()}
+        <br />
+        Added: {number1.add(number2).toScientific()}
+        <br />
+        Subtracted: {number1.subtract(number2).toScientific()}
+        <br />
+        Multiplied: {number1.multiply(number2).toScientific()}
+      </p>
 
       <p>
         Ticks: {ticks}

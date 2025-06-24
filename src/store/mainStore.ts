@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import { create } from "zustand";
-import { debug } from "../utils";
+// import { debug } from "../utils";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
 
@@ -129,7 +129,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         state.transactionsPerTick.add(0.02 * state.transactionSpeedUpgrades),
       );
 
-      debug(`Total accumulated: ${totalAccumulated.toNumber()}`);
+      // debug(`Total accumulated: ${totalAccumulated.toNumber()}`);
 
       // Check if the accumulated transaction amount is higher than 1, if so, create a new transaction, else, skip and add to accumulated transaction amount
       if (
@@ -147,9 +147,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
         );
       }
 
-      debug(
-        `Total completed transactions count: ${completedTransactionsCount}`,
-      );
+      // debug(
+      //   `Total completed transactions count: ${completedTransactionsCount}`,
+      // );
 
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
@@ -168,7 +168,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
           Math.round(state.transactionQueueThreshold * 1.1),
         );
 
-        debug(`!!! Transaction queue amount: ${state.transactionQueueAmount}`);
+        // debug(`!!! Transaction queue amount: ${state.transactionQueueAmount}`);
       }
 
       // Add the new transactions to the transaction queue
@@ -188,7 +188,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
       }
 
       // debug(`Transactions queue: ${newTransactionQueue}`);
-      debug(`New transactions count: ${completedTransactionsCount}`);
+      // debug(`New transactions count: ${completedTransactionsCount}`);
 
       return {
         ticks: state.ticks + 1,
