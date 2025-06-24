@@ -1,9 +1,9 @@
 import { Decimal } from "decimal.js";
-import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
 
 import type { customBigNumber } from "./types/main";
+import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
 
-const removeEndVowel = (text: string): string => {
+const removeVowel = (text: string): string => {
   if (["a", "e", "i", "o", "u"].includes(text.slice(-1))) {
     text = text.slice(0, -1);
   }
@@ -39,27 +39,26 @@ export class BigNumber {
     }
 
     let namedNumber = "";
-    const numberArray = Math.floor(Number(this.exponent - 3n / 3n))
+    const numberList = Math.floor(Number((this.exponent - 3n) / 3n))
       .toString()
       .split("") as unknown as number[];
-    const arrayRemainder = numberArray.length % 3;
+    const remainderOfList = numberList.length % 3;
 
-    if (arrayRemainder === 1)
-      namedNumber += UNDER_THIRTY[numberArray[0]].slice(0, -2);
+    if (remainderOfList === 1)
+      namedNumber += UNDER_THIRTY[numberList[0]].slice(0, -2);
 
-    if (arrayRemainder === 2) {
-      namedNumber += ONES[numberArray[0]][1];
-      namedNumber += TENS[numberArray[1]][1];
+    if (remainderOfList === 2) {
+      namedNumber += ONES[numberList[0]][1];
+      namedNumber += TENS[numberList[1]][1];
 
-      removeEndVowel(namedNumber);
+      removeVowel(namedNumber);
       namedNumber += "illi";
     }
 
-    const listWithoutRemainders = numberArray.slice(
-      arrayRemainder,
-      numberArray.length,
+    const listWithoutRemainders = numberList.slice(
+      remainderOfList,
+      numberList.length,
     );
-
     for (let i = 0; i < listWithoutRemainders.length; i += 3) {
       const ones = listWithoutRemainders[i + 2];
       const tens = listWithoutRemainders[i + 1];
@@ -72,13 +71,15 @@ export class BigNumber {
       if (hundreds !== 0) namedNumber += HUNDREDS[hundreds][1];
 
       if (i + 3 < listWithoutRemainders.length) {
-        removeEndVowel(namedNumber);
+        removeVowel(namedNumber);
         namedNumber += "illi";
       }
     }
 
-    removeEndVowel(namedNumber);
-    return (namedNumber += "illion");
+    removeVowel(namedNumber);
+    namedNumber += "illion";
+
+    return namedNumber;
   }
 
   multiply(number: BigNumber): BigNumber {
