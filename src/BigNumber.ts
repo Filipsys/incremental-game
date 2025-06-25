@@ -3,9 +3,9 @@ import { Decimal } from "decimal.js";
 import type { customBigNumber } from "./types/main";
 import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
 
-const removeEndVowel = (text: string): string => {
+const removeEndVowel = (text: string) => {
   if (["a", "e", "i", "o", "u"].includes(text.slice(-1))) {
-    text = text.slice(0, -1);
+    return text.slice(0, -1);
   }
 
   return text;
@@ -23,13 +23,15 @@ export class BigNumber {
   }
 
   toScientific(): string {
+    if (this.exponent <= 6n)
+      return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
+
     return `${this.base.toString()}e${this.exponent.toString()}`;
   }
 
   toNamed(): string {
-    if (this.exponent < 3n) {
-      return `${this.base.toNumber() * Math.pow(10, Number(this.exponent))}`;
-    }
+    if (this.exponent <= 6n)
+      return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
 
     if (this.exponent <= 30n) {
       const mult =
@@ -39,44 +41,78 @@ export class BigNumber {
     }
 
     let namedNumber = "";
+    let lastConnectors: string[] | undefined = undefined;
     const numberArray = Math.floor(Number((this.exponent - 3n) / 3n))
       .toString()
       .split("") as unknown as number[];
     const arrayRemainder = numberArray.length % 3;
 
+    const addFragment = (
+      currentString: string,
+      newFragment: [string, string[]],
+    ): string => {
+      if (lastConnectors === undefined) {
+        lastConnectors = newFragment[1];
+
+        return currentString + newFragment[0];
+      }
+
+      if (
+        lastConnectors.includes("*") &&
+        (newFragment[1].includes("s") || newFragment[1].includes("x"))
+      ) {
+        lastConnectors = newFragment[1];
+        return currentString + "s" + newFragment[0];
+      }
+
+      let connector = "";
+      for (const frag of lastConnectors) {
+        for (const frag2 of newFragment[1]) {
+          if (frag === frag2) connector = frag;
+        }
+      }
+
+      lastConnectors = newFragment[1];
+      return currentString + connector + newFragment[0];
+    };
+
     if (arrayRemainder === 1)
       namedNumber += UNDER_THIRTY[numberArray[0]].slice(0, -2);
 
     if (arrayRemainder === 2) {
-      namedNumber += ONES[numberArray[0]][1];
-      namedNumber += TENS[numberArray[1]][1];
+      namedNumber = addFragment(namedNumber, ONES[numberArray[0]]);
+      namedNumber = addFragment(namedNumber, TENS[numberArray[1]]);
 
-      removeEndVowel(namedNumber);
-      namedNumber += "illi";
+      namedNumber = removeEndVowel(namedNumber);
+      if (numberArray.length > arrayRemainder) namedNumber += "illi";
     }
 
     const listWithoutRemainders = numberArray.slice(
       arrayRemainder,
       numberArray.length,
     );
+
     for (let i = 0; i < listWithoutRemainders.length; i += 3) {
-      const ones = listWithoutRemainders[i + 2];
-      const tens = listWithoutRemainders[i + 1];
-      const hundreds = listWithoutRemainders[i];
+      const ones = Number(listWithoutRemainders[i + 2]);
+      const tens = Number(listWithoutRemainders[i + 1]);
+      const hundreds = Number(listWithoutRemainders[i]);
 
-      if (ones === 0 && tens === 0 && hundreds === 0) namedNumber += "nilli";
+      if (ones === 0 && tens === 0 && hundreds === 0) {
+        namedNumber += "nilli";
+      } else {
+        if (ones !== 0) namedNumber = addFragment(namedNumber, ONES[ones]);
+        if (tens !== 0) namedNumber = addFragment(namedNumber, TENS[tens]);
+        if (hundreds !== 0)
+          namedNumber = addFragment(namedNumber, HUNDREDS[hundreds]);
 
-      if (ones !== 0) namedNumber += ONES[ones][1];
-      if (tens !== 0) namedNumber += TENS[tens][1];
-      if (hundreds !== 0) namedNumber += HUNDREDS[hundreds][1];
-
-      if (i + 3 < listWithoutRemainders.length) {
-        removeEndVowel(namedNumber);
-        namedNumber += "illi";
+        if (i + 3 < listWithoutRemainders.length) {
+          namedNumber = removeEndVowel(namedNumber);
+          namedNumber += "illi";
+        }
       }
     }
 
-    removeEndVowel(namedNumber);
+    namedNumber = removeEndVowel(namedNumber);
     return (namedNumber += "illion");
   }
 

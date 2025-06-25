@@ -75,10 +75,8 @@ function App() {
     return () => clearInterval(intervalLoop);
   }, [startTick]);
 
-  // console.log(createTransactionDetails());
-
-  const number1 = new BigNumber(1, 19683n);
-  const number2 = new BigNumber(2.3, 1683n);
+  const number1 = new BigNumber(1, 3000012n);
+  const number2 = new BigNumber(2.3, 117n);
 
   return (
     <div style={{ padding: "1em" }}>

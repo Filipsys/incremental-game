@@ -12,43 +12,43 @@ export const UNDER_THIRTY = [
 ];
 
 export const ONES = [
-  [[], "", []],
-  [[], "un", []],
-  [[], "duo", []],
-  [[], "tre", ["*"]],
-  [[], "quattuor", []],
-  [[], "quin", []],
-  [[], "se", ["s", "x"]],
-  [[], "septe", ["m", "n"]],
-  [[], "octo", []],
-  [[], "nove", ["m", "n"]],
-] as [string[], string, string[]][];
+  ["", []],
+  ["un", []],
+  ["duo", []],
+  ["tre", ["*"]],
+  ["quattuor", []],
+  ["quin", []],
+  ["se", ["s", "x"]],
+  ["septe", ["m", "n"]],
+  ["octo", []],
+  ["nove", ["m", "n"]],
+] as [string, string[]][];
 
 export const TENS = [
-  [[], "", []],
-  [["n"], "deci", []],
-  [["m", "s"], "viginti", []],
-  [["n", "s"], "triginta", []],
-  [["n", "s"], "quadraginta", []],
-  [["n", "s"], "quinquaginta", []],
-  [["n"], "sexaginta", []],
-  [["n"], "septuaginta", []],
-  [["m", "x"], "octoginta", []],
-  [[], "nonaginta", []],
-] as [string[], string, string[]][];
+  ["", []],
+  ["deci", ["n"]],
+  ["viginti", ["m", "s"]],
+  ["triginta", ["n", "s"]],
+  ["quadraginta", ["n", "s"]],
+  ["quinquaginta", ["n", "s"]],
+  ["sexaginta", ["n"]],
+  ["septuaginta", ["n"]],
+  ["octoginta", ["m", "x"]],
+  ["nonaginta", []],
+] as [string, string[]][];
 
 export const HUNDREDS = [
-  [[], "", []],
-  [["n", "x"], "centi", []],
-  [["n"], "ducenti", []],
-  [["n", "s"], "trecenti", []],
-  [["n", "s"], "quadringenti", []],
-  [["n", "s"], "quingenti", []],
-  [["n"], "sescenti", []],
-  [["n"], "septingenti", []],
-  [["m", "x"], "octingenti", []],
-  [[], "nongenti", []],
-];
+  ["", []],
+  ["centi", ["n", "x"]],
+  ["ducenti", ["n"]],
+  ["trecenti", ["n", "s"]],
+  ["quadringenti", ["n", "s"]],
+  ["quingenti", ["n", "s"]],
+  ["sescenti", ["n"]],
+  ["septingenti", ["n"]],
+  ["octingenti", ["m", "x"]],
+  ["nongenti", []],
+] as [string, string[]][];
 
 export const ISO_CODES = [
   "AED",
