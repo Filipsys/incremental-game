@@ -3,11 +3,12 @@ import { create } from "zustand";
 // import { debug } from "../utils";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
+import { BigNumber } from "../BigNumber";
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
-  transactionsComplete: 0,
-  transactionsPending: 0,
+  transactionsComplete: new BigNumber(0, 0n),
+  transactionsPending: new BigNumber(0, 0n),
   transactionsPerTick: new Decimal(20.02), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
@@ -28,6 +29,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
   // maxLoanAmountUpgrades: 0,
   // expandCurrencyUpgrades: 0,
   // quantumStabilityUpgrades: 0,
+
+  notation: "standard",
 
   setTicks: (ticks: GameStore["ticks"]) => set({ ticks: ticks }),
 
@@ -71,27 +74,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
       transactionValidationSpeedUpgrades:
         state.transactionValidationSpeedUpgrades + amount,
     })),
-  // buyTransactionMultithreadingUpgrade: () =>
-  //   set((state) => ({
-  //     funds: state.funds.minus(40),
-  //     transactionMultithreadingUpgrades:
-  //       state.transactionMultithreadingUpgrades + 1,
-  //   })),
-  // buyMaxLoanAmountUpgrade: () =>
-  //   set((state) => ({
-  //     funds: state.funds.minus(40),
-  //     maxLoanAmountUpgrades: state.maxLoanAmountUpgrades + 1,
-  //   })),
-  // buyExpandCurrencyUpgrade: () =>
-  //   set((state) => ({
-  //     funds: state.funds.minus(40),
-  //     expandCurrencyUpgrades: state.expandCurrencyUpgrades + 1,
-  //   })),
-  // buyQuantumStabilityUpgrade: () =>
-  //   set((state) => ({
-  //     funds: state.funds.minus(40),
-  //     quantumStabilityUpgrades: state.quantumStabilityUpgrades + 1,
-  //   })),
+
+  changeNotation: (newNotation: GameStore["notation"]) =>
+    set({ notation: newNotation }),
 
   startTick: () =>
     set((state) => {
@@ -192,9 +177,10 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       return {
         ticks: state.ticks + 1,
-        transactionsComplete:
-          state.transactionsComplete + completedTransactionsCount,
-        transactionsPending: filteredQueue.length,
+        transactionsComplete: state.transactionsComplete.add(
+          new BigNumber(completedTransactionsCount, 0n),
+        ),
+        transactionsPending: new BigNumber(filteredQueue.length, 0n),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
         funds: state.funds.plus(newFunds),

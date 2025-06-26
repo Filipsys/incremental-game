@@ -2,6 +2,7 @@ import { Decimal } from "decimal.js";
 
 import type { customBigNumber } from "./types/main";
 import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
+import { useStore } from "./store/mainStore";
 
 const removeEndVowel = (text: string) => {
   if (["a", "e", "i", "o", "u"].includes(text.slice(-1))) {
@@ -113,7 +114,17 @@ export class BigNumber {
     }
 
     namedNumber = removeEndVowel(namedNumber);
-    return (namedNumber += "illion");
+    return `${this.base} ${(namedNumber += "illion")}`;
+  }
+
+  /** @description Returns the current notation string according to the store. */
+  currentNotation(): string {
+    const notation = useStore.getState().notation;
+
+    if (notation === "standard") return this.toNamed();
+    if (notation === "scientific") return this.toScientific();
+
+    return this.toNamed();
   }
 
   multiply(number: BigNumber): BigNumber {

@@ -1,11 +1,12 @@
 import type Decimal from "decimal.js";
+import type { BigNumber } from "../BigNumber";
 
 export type Transaction = EpochTimeStamp;
 
 export interface GameStore {
   ticks: number;
-  transactionsComplete: number;
-  transactionsPending: number;
+  transactionsComplete: BigNumber;
+  transactionsPending: BigNumber;
   transactionsPerTick: Decimal;
   transactionAccumulator: Decimal;
   transactionValidationSpeed: Decimal;
@@ -28,6 +29,9 @@ export interface GameStore {
   // maxLoanAmountUpgrades: number;
   // expandCurrencyUpgrades: number;
   // quantumStabilityUpgrades: number;
+
+  // Utils
+  notation: "standard" | "scientific";
 }
 
 export interface Actions {
@@ -57,5 +61,7 @@ export interface Actions {
   // buyExpandCurrencyUpgrade: () => void;
   // buyQuantumStabilityUpgrade: () => void;
 
+  // Utils
+  changeNotation: (newNotation: GameStore["notation"]) => void;
   startTick: () => void;
 }

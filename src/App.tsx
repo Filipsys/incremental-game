@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { useStore } from "./store/mainStore";
 import { Stage1 } from "./components/machines/Stage1";
 
-import type Decimal from "decimal.js";
-import type { TransctionDetails } from "./types/main";
-import { NAMES, SURNAMES } from "./assets/static";
+// import type { TransctionDetails } from "./types/main";
+// import { NAMES, SURNAMES } from "./assets/static";
 import { Debug } from "./components/Debug";
 import { BigNumber } from "./BigNumber";
+
+import type Decimal from "decimal.js";
+import { NotationPicker } from "./components/NotationPicker";
 
 function useCurrentTransactionsPerTick(): Decimal {
   const transactionsPerTick = useStore((state) => state.transactionsPerTick);
@@ -17,23 +19,23 @@ function useCurrentTransactionsPerTick(): Decimal {
   return transactionsPerTick.add(1 * transactionSpeedUpgrades);
 }
 
-const createTransactionDetails = (): TransctionDetails => {
-  return {
-    senderID: "ABC",
-    senderName: NAMES[Math.floor(Math.random() * NAMES.length)],
-    senderSurname: SURNAMES[Math.floor(Math.random() * SURNAMES.length)],
-    recieverID: "ABC",
-    recieverName: NAMES[Math.floor(Math.random() * NAMES.length)],
-    recieverSurname: SURNAMES[Math.floor(Math.random() * SURNAMES.length)],
+// const createTransactionDetails = (): TransctionDetails => {
+//   return {
+//     senderID: "ABC",
+//     senderName: NAMES[Math.floor(Math.random() * NAMES.length)],
+//     senderSurname: SURNAMES[Math.floor(Math.random() * SURNAMES.length)],
+//     recieverID: "ABC",
+//     recieverName: NAMES[Math.floor(Math.random() * NAMES.length)],
+//     recieverSurname: SURNAMES[Math.floor(Math.random() * SURNAMES.length)],
 
-    transactionID: "ABC",
-    transactionState: "pending",
-    transactionType: "SEND",
-    transactionAmount: 100,
-    currency: "EUR",
-    timestamp: Date.now(),
-  };
-};
+//     transactionID: "ABC",
+//     transactionState: "pending",
+//     transactionType: "SEND",
+//     transactionAmount: 100,
+//     currency: "EUR",
+//     timestamp: Date.now(),
+//   };
+// };
 
 function App() {
   const ticks = useStore((state) => state.ticks);
@@ -70,7 +72,7 @@ function App() {
 
   // Game tick loop
   useEffect(() => {
-    const intervalLoop = setInterval(() => startTick(), 1000);
+    const intervalLoop = setInterval(() => startTick(), 100);
 
     return () => clearInterval(intervalLoop);
   }, [startTick]);
@@ -109,16 +111,18 @@ function App() {
         />
       </pre>
 
+      <NotationPicker />
+
       <p>
-        Number 1: {number1.toScientific()} {number1.toNamed()}
+        Number 1: {number1.currentNotation()}
         <br />
-        Number 2: {number2.toScientific()} {number2.toNamed()}
+        Number 2: {number2.currentNotation()}
         <br />
-        Added: {number1.add(number2).toScientific()}
+        Added: {number1.add(number2).currentNotation()}
         <br />
-        Subtracted: {number1.subtract(number2).toScientific()}
+        Subtracted: {number1.subtract(number2).currentNotation()}
         <br />
-        Multiplied: {number1.multiply(number2).toScientific()}
+        Multiplied: {number1.multiply(number2).currentNotation()}
       </p>
 
       <p>
@@ -144,9 +148,9 @@ function App() {
           .toNumber()}
         ms
         <br />
-        Transactions complete: {transactionsComplete}
+        Transactions complete: {transactionsComplete.currentNotation()}
         <br />
-        Transactions pending: {transactionsPending}
+        Transactions pending: {transactionsPending.currentNotation()}
         <br />
         Funds: {funds.toNumber().toFixed(2)} EUR
         <br />
