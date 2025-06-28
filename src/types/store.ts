@@ -11,7 +11,7 @@ export interface GameStore {
   transactionAccumulator: Decimal;
   transactionValidationSpeed: Decimal;
 
-  funds: Decimal;
+  funds: BigNumber;
   maxTransferAmount: number;
   instantTransferFee: Decimal;
 

@@ -1,5 +1,5 @@
-import Decimal from "decimal.js";
 import { useStore } from "../store/mainStore";
+import { BigNumber } from "../BigNumber";
 
 export const Debug: React.FC = () => {
   const setFunds = useStore((state) => state.setFunds);
@@ -28,7 +28,7 @@ export const Debug: React.FC = () => {
           type="number"
           onChange={(event) => {
             if (event.currentTarget.value !== "") {
-              setFunds(new Decimal(event.currentTarget.value));
+              setFunds(new BigNumber(event.currentTarget.value));
             }
           }}
         />

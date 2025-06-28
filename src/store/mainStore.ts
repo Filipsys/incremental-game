@@ -1,19 +1,19 @@
 import Decimal from "decimal.js";
+import { BigNumber } from "../BigNumber";
 import { create } from "zustand";
 // import { debug } from "../utils";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
-import { BigNumber } from "../BigNumber";
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
-  transactionsComplete: new BigNumber(0, 0n),
-  transactionsPending: new BigNumber(0, 0n),
-  transactionsPerTick: new Decimal(20.02), // 0.02
+  transactionsComplete: new BigNumber(0, 1n),
+  transactionsPending: new BigNumber(0, 1n),
+  transactionsPerTick: new Decimal(100.02), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
 
-  funds: new Decimal(0),
+  funds: new BigNumber(0, 1n),
   maxTransferAmount: 100,
   instantTransferFee: new Decimal(0.02),
 
@@ -35,9 +35,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
   setTicks: (ticks: GameStore["ticks"]) => set({ ticks: ticks }),
 
   addFunds: (funds: GameStore["funds"]) =>
-    set((state) => ({ funds: state.funds.plus(funds) })),
+    set((state) => ({ funds: state.funds.add(funds) })),
   removeFunds: (funds: GameStore["funds"]) =>
-    set((state) => ({ funds: state.funds.minus(funds) })),
+    set((state) => ({ funds: state.funds.subtract(funds) })),
   setFunds: (funds: GameStore["funds"]) => set(() => ({ funds: funds })),
 
   setTransactionAccumulator: (
@@ -56,7 +56,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
-      funds: state.funds.minus(40),
+      funds: state.funds.subtract(new BigNumber(40)),
       transactionSpeedUpgrades: state.transactionSpeedUpgrades + 1,
     })),
   setTransactionSpeedUpgrade: (amount: number) =>
@@ -65,7 +65,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
     })),
   buyTransactionValidationSpeedUpgrade: () =>
     set((state) => ({
-      funds: state.funds.minus(120),
+      funds: state.funds.subtract(new BigNumber(120)),
       transactionValidationSpeedUpgrades:
         state.transactionValidationSpeedUpgrades + 1,
     })),
@@ -183,7 +183,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         transactionsPending: new BigNumber(filteredQueue.length, 0n),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
-        funds: state.funds.plus(newFunds),
+        funds: state.funds.add(new BigNumber(newFunds)),
       };
     }),
 }));

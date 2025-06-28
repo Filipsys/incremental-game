@@ -152,7 +152,7 @@ function App() {
         <br />
         Transactions pending: {transactionsPending.currentNotation()}
         <br />
-        Funds: {funds.toNumber().toFixed(2)} EUR
+        Funds: {funds.currentNotation()} EUR
         <br />
         <br />
         Transaction upgrades:
@@ -165,7 +165,7 @@ function App() {
       <button
         type="button"
         onClick={() => buyTransactionSpeedUpgrade()}
-        disabled={funds.minus(40).lessThan(0)}
+        disabled={funds.subtract(new BigNumber(40)).lessThan(new BigNumber(0))}
       >
         <p>Transaction speed upgrade</p>
         <p>40 EUR</p>
@@ -173,7 +173,7 @@ function App() {
       <button
         type="button"
         onClick={() => buyTransactionValidationSpeed()}
-        disabled={funds.minus(120).lessThan(0)}
+        disabled={funds.subtract(new BigNumber(120)).lessThan(new BigNumber(0))}
       >
         <p>Transaction validation speed upgrade</p>
         <p>120 EUR</p>

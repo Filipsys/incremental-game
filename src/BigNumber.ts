@@ -1,8 +1,8 @@
 import { Decimal } from "decimal.js";
+import { useStore } from "./store/mainStore";
+import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
 
 import type { customBigNumber } from "./types/main";
-import { HUNDREDS, ONES, TENS, UNDER_THIRTY } from "./assets/static";
-import { useStore } from "./store/mainStore";
 
 const removeEndVowel = (text: string) => {
   if (["a", "e", "i", "o", "u"].includes(text.slice(-1))) {
@@ -18,9 +18,21 @@ export class BigNumber {
   base: customBigNumber["base"];
   exponent: customBigNumber["exponent"];
 
-  constructor(base: Decimal.Value, exponent: customBigNumber["exponent"]) {
+  constructor(base: Decimal.Value, exponent = 1n) {
     this.base = new Decimal(base);
     this.exponent = exponent;
+  }
+
+  normaliseBase(): BigNumber {
+    console.log("Old base: ", this.base.toNumber());
+    if (this.base.lessThan(10)) return this;
+
+    const divider = Math.floor(this.base.toNumber()).toString().length - 1;
+
+    return new BigNumber(
+      this.base.div(Math.pow(10, divider)),
+      this.exponent + BigInt(divider),
+    );
   }
 
   toScientific(): string {
@@ -131,13 +143,16 @@ export class BigNumber {
     return new BigNumber(
       this.base.mul(number.base),
       this.exponent + number.exponent,
-    );
+    ).normaliseBase();
   }
 
   // These might lose precision if the larger exponent is picked
   add(number: BigNumber): BigNumber {
     if (this.exponent === number.exponent) {
-      return new BigNumber(this.base.add(number.base), this.exponent);
+      return new BigNumber(
+        this.base.add(number.base),
+        this.exponent,
+      ).normaliseBase();
     }
 
     const exponentDifference = this.exponent - number.exponent;
@@ -151,12 +166,16 @@ export class BigNumber {
       newBase = this.base.div(scale).add(number.base);
     }
 
-    return new BigNumber(newBase, this.exponent);
+    return new BigNumber(newBase, this.exponent).normaliseBase();
   }
 
+  // TODO: Add Decimal.Value as another working type
   subtract(number: BigNumber): BigNumber {
     if (this.exponent === number.exponent) {
-      return new BigNumber(this.base.minus(number.base), this.exponent);
+      return new BigNumber(
+        this.base.minus(number.base),
+        this.exponent,
+      ).normaliseBase();
     }
 
     const exponentDifference = this.exponent - number.exponent;
@@ -170,7 +189,7 @@ export class BigNumber {
       newBase = this.base.div(scale).minus(number.base);
     }
 
-    return new BigNumber(newBase, this.exponent);
+    return new BigNumber(newBase, this.exponent).normaliseBase();
   }
 
   lessThan(number: BigNumber): boolean {
