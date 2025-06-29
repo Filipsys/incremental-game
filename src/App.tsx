@@ -1,14 +1,12 @@
 import { useEffect } from "react";
 import { useStore } from "./store/mainStore";
 import { Stage1 } from "./components/machines/Stage1";
-
-// import type { TransctionDetails } from "./types/main";
-// import { NAMES, SURNAMES } from "./assets/static";
 import { Debug } from "./components/Debug";
 import { BigNumber } from "./BigNumber";
+import { NotationPicker } from "./components/NotationPicker";
+import { calculateValidationSpeed } from "./utils/utils";
 
 import type Decimal from "decimal.js";
-import { NotationPicker } from "./components/NotationPicker";
 
 function useCurrentTransactionsPerTick(): Decimal {
   const transactionsPerTick = useStore((state) => state.transactionsPerTick);
@@ -43,9 +41,6 @@ function App() {
   const currentTransactionsPerTick = useCurrentTransactionsPerTick();
   const transactionsComplete = useStore((state) => state.transactionsComplete);
   const transactionsPending = useStore((state) => state.transactionsPending);
-  const transactionValidationSpeed = useStore(
-    (state) => state.transactionValidationSpeed,
-  );
   const transactionSpeedUpgrades = useStore(
     (state) => state.transactionSpeedUpgrades,
   );
@@ -138,14 +133,7 @@ function App() {
         <br />
         Transaction queue threshold: {transactionQueueThreshold}
         <br />
-        Transaction validation speed:{" "}
-        {transactionValidationSpeed
-          .sub(
-            transactionValidationSpeed
-              .mul(0.01)
-              .mul(transactionValidationSpeedUpgrades),
-          )
-          .toNumber()}
+        Transaction validation speed: {calculateValidationSpeed().toNumber()}
         ms
         <br />
         Transactions complete: {transactionsComplete.currentNotation()}

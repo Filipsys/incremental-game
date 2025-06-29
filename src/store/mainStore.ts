@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { BigNumber } from "../BigNumber";
 import { create } from "zustand";
-// import { debug } from "../utils";
+import { calculateValidationSpeed } from "../utils/utils";
 
 import type { GameStore, Actions, Transaction } from "../types/store";
 
@@ -91,14 +91,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // the completed transaction count to the completed transaction amount
       const filteredQueue = state.transactionQueue.filter((transaction) => {
         if (
-          state.transactionValidationSpeed
-            .sub(
-              state.transactionValidationSpeed
-                .mul(0.01)
-                .mul(state.transactionValidationSpeedUpgrades),
-            )
-            .plus(transaction)
-            .lessThan(currentTime)
+          calculateValidationSpeed().plus(transaction).lessThan(currentTime)
         ) {
           completedTransactionsCount =
             completedTransactionsCount + state.transactionQueueAmount;
