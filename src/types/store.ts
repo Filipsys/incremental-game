@@ -31,7 +31,7 @@ export interface GameStore {
   // quantumStabilityUpgrades: number;
 
   // Utils
-  notation: "standard" | "scientific";
+  notation: "standard" | "scientific" | "engineering";
 }
 
 export interface Actions {

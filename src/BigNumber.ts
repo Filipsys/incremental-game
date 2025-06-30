@@ -41,6 +41,19 @@ export class BigNumber {
     return `${this.base.toString().slice(0, 5)}e${this.exponent.toString()}`;
   }
 
+  toEngineering(): string {
+    if (this.exponent <= 6n)
+      return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
+
+    const exponentRemainder = this.exponent % 3n;
+    const engineeringExponent = this.exponent - exponentRemainder;
+    const engineeringBase = this.base.mul(
+      Math.pow(10, Number(exponentRemainder)),
+    );
+
+    return `${engineeringBase.toString().slice(0, 5)}e${engineeringExponent}`;
+  }
+
   toNamed(): string {
     if (this.exponent <= 6n)
       return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
@@ -134,6 +147,7 @@ export class BigNumber {
 
     if (notation === "standard") return this.toNamed();
     if (notation === "scientific") return this.toScientific();
+    if (notation === "engineering") return this.toEngineering();
 
     return this.toNamed();
   }
