@@ -38,7 +38,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
     set((state) => ({ funds: state.funds.add(funds) })),
   removeFunds: (funds: GameStore["funds"]) =>
     set((state) => ({ funds: state.funds.subtract(funds) })),
-  setFunds: (funds: GameStore["funds"]) => set(() => ({ funds: funds })),
+  setFunds: (funds: GameStore["funds"]) => set({ funds: funds }),
 
   setTransactionAccumulator: (
     transactionsAccumulated: GameStore["transactionAccumulator"],

@@ -25,11 +25,20 @@ export const Debug: React.FC = () => {
       <div>
         <label htmlFor="">Funds: </label>
         <input
-          type="number"
+          type="text"
           onChange={(event) => {
-            if (event.currentTarget.value !== "") {
-              setFunds(new BigNumber(event.currentTarget.value));
+            if (event.currentTarget.value === "") return;
+
+            const stringNumber = event.currentTarget.value.toString();
+
+            if (stringNumber.includes("e")) {
+              const [base, exponent] = stringNumber.split("e");
+
+              setFunds(new BigNumber(Number(base), BigInt(exponent)));
+              return;
             }
+
+            setFunds(new BigNumber(event.currentTarget.value));
           }}
         />
       </div>

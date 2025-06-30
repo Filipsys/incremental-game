@@ -72,8 +72,8 @@ function App() {
     return () => clearInterval(intervalLoop);
   }, [startTick]);
 
-  const number1 = new BigNumber(1, 3000012n);
-  const number2 = new BigNumber(2.3, 117n);
+  // const number1 = new BigNumber(1, 3000012n);
+  // const number2 = new BigNumber(2.3, 117n);
 
   return (
     <div style={{ padding: "1em" }}>
@@ -108,7 +108,7 @@ function App() {
 
       <NotationPicker />
 
-      <p>
+      {/* <p>
         Number 1: {number1.currentNotation()}
         <br />
         Number 2: {number2.currentNotation()}
@@ -118,7 +118,7 @@ function App() {
         Subtracted: {number1.subtract(number2).currentNotation()}
         <br />
         Multiplied: {number1.multiply(number2).currentNotation()}
-      </p>
+      </p> */}
 
       <p>
         Ticks: {ticks}

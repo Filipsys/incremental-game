@@ -12,8 +12,6 @@ const removeEndVowel = (text: string) => {
   return text;
 };
 
-// Methods needed:
-// toNamed()
 export class BigNumber {
   base: customBigNumber["base"];
   exponent: customBigNumber["exponent"];
@@ -21,10 +19,11 @@ export class BigNumber {
   constructor(base: Decimal.Value, exponent = 1n) {
     this.base = new Decimal(base);
     this.exponent = exponent;
+
+    this.normaliseBase();
   }
 
   normaliseBase(): BigNumber {
-    console.log("Old base: ", this.base.toNumber());
     if (this.base.lessThan(10)) return this;
 
     const divider = Math.floor(this.base.toNumber()).toString().length - 1;
@@ -39,7 +38,7 @@ export class BigNumber {
     if (this.exponent <= 6n)
       return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
 
-    return `${this.base.toString()}e${this.exponent.toString()}`;
+    return `${this.base.toString().slice(0, 5)}e${this.exponent.toString()}`;
   }
 
   toNamed(): string {
@@ -50,7 +49,7 @@ export class BigNumber {
       const mult =
         this.exponent % 3n === 1n ? 10 : this.exponent % 3n === 2n ? 100 : 1;
 
-      return `${this.base.mul(mult).toString()} ${UNDER_THIRTY[Math.floor(Number(this.exponent) / 3) - 1]}`;
+      return `${this.base.mul(mult).toString().slice(0, 5)} ${UNDER_THIRTY[Math.floor(Number(this.exponent) / 3) - 1]}`;
     }
 
     let namedNumber = "";
@@ -126,7 +125,7 @@ export class BigNumber {
     }
 
     namedNumber = removeEndVowel(namedNumber);
-    return `${this.base} ${(namedNumber += "illion")}`;
+    return `${this.base.toString().slice(0, 5)} ${(namedNumber += "illion")}`;
   }
 
   /** @description Returns the current notation string according to the store. */
