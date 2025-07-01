@@ -51,8 +51,11 @@ function App() {
   const transactionQueueThreshold = useStore(
     (state) => state.transactionQueueThreshold,
   );
-  const transactionQueueAmount = useStore(
-    (state) => state.transactionQueueAmount,
+  const transactionQueueMaxAmount = useStore(
+    (state) => state.transactionQueueMaxAmount,
+  );
+  const transactionQueueAccumulator = useStore(
+    (state) => state.transactionQueueAccumulator,
   );
   const startTick = useStore((state) => state.startTick);
   const transactionValidationSpeedUpgrades = useStore(
@@ -112,11 +115,13 @@ function App() {
         <br />
         Transactions per tick: {currentTransactionsPerTick.toNumber()}
         <br />
-        Transaction queue amount: {transactionQueueAmount}
+        Transaction queue max amount: {transactionQueueMaxAmount}
         <br />
         Current transaction queue length: {transactionQueue.length}
         <br />
         Transaction queue threshold: {transactionQueueThreshold}
+        <br />
+        Transaction queue accumulator: {transactionQueueAccumulator}
         <br />
         Transaction validation speed: {calculateValidationSpeed().toNumber()}
         ms

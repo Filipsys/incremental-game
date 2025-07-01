@@ -28,7 +28,7 @@ export const NotationPicker = () => {
           name="notationType"
           onChange={() => changeNotation("engineering")}
         />
-        <label htmlFor="engineeringNotation">Engineering</label>{" "}
+        <label htmlFor="engineeringNotation">Engineering</label>
       </p>
     </div>
   );

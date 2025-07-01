@@ -15,8 +15,8 @@ export interface GameStore {
   maxTransferAmount: number;
   instantTransferFee: Decimal;
 
-  transactionQueueAccumulator: Decimal;
-  transactionQueueAmount: number;
+  transactionQueueAccumulator: number;
+  transactionQueueMaxAmount: number;
   transactionQueueThreshold: number;
   transactionQueue: Transaction[];
 
@@ -45,7 +45,7 @@ export interface Actions {
     accumulatedTransactions: GameStore["transactionAccumulator"],
   ) => void;
 
-  increaseTransactionQueueAmount: () => void;
+  increasetransactionQueueMaxAmount: () => void;
   setTransactionQueueThreshold: (
     threshold: GameStore["transactionQueueThreshold"],
   ) => void;

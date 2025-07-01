@@ -44,6 +44,7 @@ export const Debug: React.FC = () => {
       </div>
 
       <p>Upgrades:</p>
+
       <div>
         <label htmlFor="">Transaction speed: </label>
         <input

@@ -17,8 +17,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
   maxTransferAmount: 100,
   instantTransferFee: new Decimal(0.02),
 
-  transactionQueueAccumulator: new Decimal(0),
-  transactionQueueAmount: 1,
+  transactionQueueAccumulator: 0,
+  transactionQueueMaxAmount: 1,
   transactionQueueThreshold: 500,
   transactionQueue: [],
   supportedCurrencies: [],
@@ -42,17 +42,26 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   setTransactionAccumulator: (
     transactionsAccumulated: GameStore["transactionAccumulator"],
-  ) => set(() => ({ transactionAccumulator: transactionsAccumulated })),
+  ) => set({ transactionAccumulator: transactionsAccumulated }),
 
-  increaseTransactionQueueAmount: () =>
-    set((state) => ({
-      transactionQueueAmount: state.transactionQueueAmount * 2,
-    })),
+  increasetransactionQueueMaxAmount: () =>
+    set((state) => {
+      const previousLength = state.transactionQueue.length;
+      state.transactionQueue.length = 0;
+
+      return {
+        transactionQueueAccumulator:
+          Math.round(state.transactionQueueAccumulator / 2) + previousLength,
+        transactionQueueMaxAmount: state.transactionQueueMaxAmount * 2,
+      };
+    }),
+
   setTransactionQueueThreshold: (
     threshold: GameStore["transactionQueueThreshold"],
   ) => set({ transactionQueueThreshold: threshold }),
+
   setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
-    set(() => ({ transactionQueue: queue })),
+    set({ transactionQueue: queue }),
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
@@ -94,7 +103,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
           calculateValidationSpeed().plus(transaction).lessThan(currentTime)
         ) {
           completedTransactionsCount =
-            completedTransactionsCount + state.transactionQueueAmount;
+            completedTransactionsCount + state.transactionQueueMaxAmount;
 
           return false;
         }
@@ -120,9 +129,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
         totalAccumulated.minus(totalAccumulated.mod(1));
       } else {
-        state.setTransactionAccumulator(
-          state.transactionAccumulator.plus(totalAccumulated),
-        );
+        // state.setTransactionAccumulator(
+        //   state.transactionAccumulator.plus(totalAccumulated),
+        // );
       }
 
       // debug(
@@ -141,23 +150,27 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // Check if the transaction queue is past the threshold, if so,
       // increase the transactions amount in the queue
       if (state.transactionQueue.length > state.transactionQueueThreshold) {
-        state.increaseTransactionQueueAmount();
+        state.increasetransactionQueueMaxAmount();
+
         state.setTransactionQueueThreshold(
           Math.round(state.transactionQueueThreshold * 1.1),
         );
 
-        // debug(`!!! Transaction queue amount: ${state.transactionQueueAmount}`);
+        filteredQueue.length = 0;
       }
 
       // Add the new transactions to the transaction queue
       const newTransactionQueue: Transaction[] = [...filteredQueue];
 
-      if (totalAccumulated.greaterThanOrEqualTo(state.transactionQueueAmount)) {
+      if (
+        totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
+      ) {
         for (
           let i = 0;
           i <
           Math.floor(
-            totalAccumulated.floor().toNumber() / state.transactionQueueAmount,
+            totalAccumulated.floor().toNumber() /
+              state.transactionQueueMaxAmount,
           );
           i++
         ) {
