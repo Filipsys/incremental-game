@@ -91,6 +91,13 @@ export const useStore = create<GameStore & Actions>((set) => ({
     set((state) => {
       const currentTime: EpochTimeStamp = Date.now();
       let completedTransactionsCount = 0;
+      let usedTransactionQueueAcc = false;
+
+      if (state.transactionQueueAccumulator > 0) {
+        completedTransactionsCount += state.transactionQueueMaxAmount / 2;
+
+        usedTransactionQueueAcc = true;
+      }
 
       // I will probably want to remove this main loop feature
       // and switch the array with something less resource-intensive
@@ -116,8 +123,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
         state.transactionsPerTick.add(0.02 * state.transactionSpeedUpgrades),
       );
 
-      // debug(`Total accumulated: ${totalAccumulated.toNumber()}`);
-
       // Check if the accumulated transaction amount is higher than 1, if so, create a new transaction, else, skip and add to accumulated transaction amount
       if (
         state.transactionAccumulator
@@ -133,10 +138,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
         //   state.transactionAccumulator.plus(totalAccumulated),
         // );
       }
-
-      // debug(
-      //   `Total completed transactions count: ${completedTransactionsCount}`,
-      // );
 
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
@@ -178,8 +179,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
         }
       }
 
-      // debug(`Transactions queue: ${newTransactionQueue}`);
-      // debug(`New transactions count: ${completedTransactionsCount}`);
+      const newTransactionQueueAccumulator = usedTransactionQueueAcc
+        ? --state.transactionQueueAccumulator
+        : state.transactionQueueAccumulator;
 
       return {
         ticks: state.ticks + 1,
@@ -189,6 +191,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         transactionsPending: new BigNumber(filteredQueue.length, 0n),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
+        transactionQueueAccumulator: newTransactionQueueAccumulator,
         funds: state.funds.add(new BigNumber(newFunds)),
       };
     }),

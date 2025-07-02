@@ -1,5 +1,5 @@
 import { useStore } from "../store/mainStore";
-import type Decimal from "decimal.js";
+import Decimal from "decimal.js";
 
 export const DEBUG_MODE = import.meta.env.DEV;
 
@@ -14,12 +14,10 @@ export const debug = (message: string | number, isError = false) => {
 };
 
 export const calculateValidationSpeed = (): Decimal => {
-  const upgradeAmount = useStore.getState().transactionValidationSpeedUpgrades;
-  let totalTime = useStore.getState().transactionValidationSpeed;
+  const { transactionValidationSpeed, transactionValidationSpeedUpgrades } =
+    useStore.getState();
 
-  for (let i = 0; i < upgradeAmount; i++) {
-    totalTime = totalTime.mul(0.99);
-  }
-
-  return totalTime;
+  return transactionValidationSpeed.mul(
+    new Decimal(0.99).pow(transactionValidationSpeedUpgrades),
+  );
 };
