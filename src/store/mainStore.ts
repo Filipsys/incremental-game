@@ -9,7 +9,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: new BigNumber(0, 1n),
   transactionsPending: new BigNumber(0, 1n),
-  transactionsPerTick: new Decimal(100.02), // 0.02
+  transactionsPerTick: new Decimal(5), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
 
@@ -21,6 +21,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
   transactionQueueMaxAmount: 1,
   transactionQueueThreshold: 500,
   transactionQueue: [],
+  transactionChanges: [],
+
   supportedCurrencies: [],
 
   transactionSpeedUpgrades: 0,
@@ -105,18 +107,19 @@ export const useStore = create<GameStore & Actions>((set) => ({
       //
       // Remove the pending transactions if their time has passed & add
       // the completed transaction count to the completed transaction amount
-      const filteredQueue = state.transactionQueue.filter((transaction) => {
-        if (
-          calculateValidationSpeed().plus(transaction).lessThan(currentTime)
-        ) {
-          completedTransactionsCount =
-            completedTransactionsCount + state.transactionQueueMaxAmount;
+      let iterator = 0;
+      while (
+        iterator < state.transactionQueue.length &&
+        calculateValidationSpeed()
+          .plus(state.transactionQueue[iterator])
+          .greaterThan(currentTime)
+      ) {
+        completedTransactionsCount += state.transactionQueueMaxAmount;
 
-          return false;
-        }
+        iterator++;
+      }
 
-        return true;
-      });
+      const filteredQueue = state.transactionQueue.slice(0, iterator);
 
       // Gather the total accumulated transactions from the current transaction amount + the transaction amount from this tick
       const totalAccumulated = state.transactionAccumulator.plus(
@@ -186,9 +189,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
       return {
         ticks: state.ticks + 1,
         transactionsComplete: state.transactionsComplete.add(
-          new BigNumber(completedTransactionsCount, 0n),
+          new BigNumber(completedTransactionsCount, 1n),
         ),
-        transactionsPending: new BigNumber(filteredQueue.length, 0n),
+        transactionsPending: new BigNumber(filteredQueue.length, 1n),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
         transactionQueueAccumulator: newTransactionQueueAccumulator,

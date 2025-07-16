@@ -19,6 +19,10 @@ export interface GameStore {
   transactionQueueMaxAmount: number;
   transactionQueueThreshold: number;
   transactionQueue: Transaction[];
+  transactionChanges: [
+    EpochTimeStamp,
+    GameStore["transactionQueueMaxAmount"],
+  ][];
 
   supportedCurrencies: string[];
 
