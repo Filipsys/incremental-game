@@ -46,7 +46,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
     transactionsAccumulated: GameStore["transactionAccumulator"],
   ) => set({ transactionAccumulator: transactionsAccumulated }),
 
-  increasetransactionQueueMaxAmount: () =>
+  increaseTransactionQueueMaxAmount: () =>
     set((state) => {
       const previousLength = state.transactionQueue.length;
       state.transactionQueue.length = 0;
@@ -64,6 +64,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
     set({ transactionQueue: queue }),
+
+  resetTransactionQueue: () => set({ transactionQueue: [] }),
 
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
@@ -121,12 +123,15 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       const filteredQueue = state.transactionQueue.slice(0, iterator);
 
-      // Gather the total accumulated transactions from the current transaction amount + the transaction amount from this tick
+      // Gather the total accumulated transactions from the current
+      // transaction amount + the transaction amount from this tick
       const totalAccumulated = state.transactionAccumulator.plus(
         state.transactionsPerTick.add(0.02 * state.transactionSpeedUpgrades),
       );
 
-      // Check if the accumulated transaction amount is higher than 1, if so, create a new transaction, else, skip and add to accumulated transaction amount
+      // Check if the accumulated transaction amount is higher than 1,
+      // if so, create a new transaction, else, skip and add to accumulated
+      // transaction amount
       if (
         state.transactionAccumulator
           .plus(totalAccumulated)
@@ -154,13 +159,14 @@ export const useStore = create<GameStore & Actions>((set) => ({
       // Check if the transaction queue is past the threshold, if so,
       // increase the transactions amount in the queue
       if (state.transactionQueue.length > state.transactionQueueThreshold) {
-        state.increasetransactionQueueMaxAmount();
+        state.increaseTransactionQueueMaxAmount();
 
         state.setTransactionQueueThreshold(
           Math.round(state.transactionQueueThreshold * 1.1),
         );
 
-        filteredQueue.length = 0;
+        // filteredQueue.length = 0;
+        state.resetTransactionQueue();
       }
 
       // Add the new transactions to the transaction queue

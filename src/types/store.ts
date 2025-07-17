@@ -49,11 +49,12 @@ export interface Actions {
     accumulatedTransactions: GameStore["transactionAccumulator"],
   ) => void;
 
-  increasetransactionQueueMaxAmount: () => void;
+  increaseTransactionQueueMaxAmount: () => void;
   setTransactionQueueThreshold: (
     threshold: GameStore["transactionQueueThreshold"],
   ) => void;
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
+  resetTransactionQueue: () => void;
   // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
 
   buyTransactionSpeedUpgrade: () => void;
