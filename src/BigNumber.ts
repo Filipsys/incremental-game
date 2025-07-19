@@ -16,22 +16,29 @@ export class BigNumber {
   base: customBigNumber["base"];
   exponent: customBigNumber["exponent"];
 
-  constructor(base: Decimal.Value, exponent = 1n) {
+  constructor(base: Decimal.Value, exponent = 1n, _normalised = false) {
     this.base = new Decimal(base);
     this.exponent = exponent;
 
-    this.normaliseBase();
+    if (!_normalised) {
+      const normalised = BigNumber.createNormalised(this.base, this.exponent);
+
+      this.base = normalised.base;
+      this.exponent = normalised.exponent;
+    }
   }
 
-  normaliseBase(): BigNumber {
-    if (this.base.lessThan(10)) return this;
+  static createNormalised(base: Decimal.Value, exponent = 1n): BigNumber {
+    let decimalBase = new Decimal(base);
+    let adjustedExponent = exponent;
 
-    const divider = Math.floor(this.base.toNumber()).toString().length - 1;
+    while (decimalBase.greaterThanOrEqualTo(10)) {
+      decimalBase = decimalBase.div(10);
 
-    return new BigNumber(
-      this.base.div(Math.pow(10, divider)),
-      this.exponent + BigInt(divider),
-    );
+      adjustedExponent += 1n;
+    }
+
+    return new BigNumber(decimalBase, adjustedExponent, true);
   }
 
   toScientific(): string {
@@ -152,24 +159,29 @@ export class BigNumber {
     return this.toNamed();
   }
 
-  multiply(number: BigNumber): BigNumber {
+  multiply(number: BigNumber | Decimal | number): BigNumber {
+    if (!(number instanceof BigNumber)) {
+      return new BigNumber(this.base.mul(number), this.exponent);
+    }
+
     return new BigNumber(
       this.base.mul(number.base),
       this.exponent + number.exponent,
-    ).normaliseBase();
+    );
   }
 
   // These might lose precision if the larger exponent is picked
-  add(number: BigNumber): BigNumber {
-    if (this.exponent === number.exponent) {
-      return new BigNumber(
-        this.base.add(number.base),
-        this.exponent,
-      ).normaliseBase();
+  add(number: BigNumber | Decimal | number): BigNumber {
+    if (!(number instanceof BigNumber)) {
+      return new BigNumber(this.base.add(number), this.exponent);
     }
 
-    const exponentDifference = this.exponent - number.exponent;
+    if (this.exponent === number.exponent) {
+      return new BigNumber(this.base.add(number.base), this.exponent);
+    }
+
     let newBase: Decimal;
+    const exponentDifference = this.exponent - number.exponent;
 
     if (exponentDifference > 0n) {
       const scale = new Decimal(10).pow(exponentDifference.toString());
@@ -179,16 +191,16 @@ export class BigNumber {
       newBase = this.base.div(scale).add(number.base);
     }
 
-    return new BigNumber(newBase, this.exponent).normaliseBase();
+    return new BigNumber(newBase, this.exponent);
   }
 
-  // TODO: Add Decimal.Value as another working type
-  subtract(number: BigNumber): BigNumber {
+  subtract(number: BigNumber | Decimal | number): BigNumber {
+    if (number instanceof Decimal || typeof number === "number") {
+      return new BigNumber(this.base.sub(number), this.exponent);
+    }
+
     if (this.exponent === number.exponent) {
-      return new BigNumber(
-        this.base.minus(number.base),
-        this.exponent,
-      ).normaliseBase();
+      return new BigNumber(this.base.minus(number.base), this.exponent);
     }
 
     const exponentDifference = this.exponent - number.exponent;
@@ -202,48 +214,46 @@ export class BigNumber {
       newBase = this.base.div(scale).minus(number.base);
     }
 
-    return new BigNumber(newBase, this.exponent).normaliseBase();
+    return new BigNumber(newBase, this.exponent);
   }
 
-  lessThan(number: BigNumber): boolean {
-    if (
-      (this.base.lessThanOrEqualTo(number.base) &&
-        this.exponent < number.exponent) ||
-      (this.base.lessThan(number.base) && this.exponent <= number.exponent)
-    )
-      return true;
+  /** @description Check if a number is less than the number passed through the method */
+  lessThan(number: BigNumber | Decimal | number): boolean {
+    if (!(number instanceof BigNumber)) number = new BigNumber(number);
 
-    return false;
+    if (this.exponent < number.exponent) return true;
+    if (this.exponent > number.exponent) return false;
+
+    return this.base.lessThan(number.base);
   }
 
-  lessThanOrEqualTo(number: BigNumber): boolean {
-    if (
-      this.base.lessThanOrEqualTo(number.base) &&
-      this.exponent <= number.exponent
-    )
-      return true;
+  /** @description Check if a number is less than or equal to the number passed through the method */
+  lessThanOrEqualTo(number: BigNumber | Decimal | number): boolean {
+    if (!(number instanceof BigNumber)) number = new BigNumber(number);
 
-    return false;
+    if (this.exponent < number.exponent) return true;
+    if (this.exponent > number.exponent) return false;
+
+    return this.base.lessThanOrEqualTo(number.base);
   }
 
-  greaterThan(number: BigNumber): boolean {
-    if (
-      (this.base.greaterThanOrEqualTo(number.base) &&
-        this.exponent > number.exponent) ||
-      (this.base.greaterThan(number.base) && this.exponent >= number.exponent)
-    )
-      return true;
+  /** @description Check if a number is greater than the number passed through the method */
+  greaterThan(number: BigNumber | Decimal | number): boolean {
+    if (!(number instanceof BigNumber)) number = new BigNumber(number);
 
-    return false;
+    if (this.exponent < number.exponent) return false;
+    if (this.exponent > number.exponent) return true;
+
+    return this.base.greaterThan(number.base);
   }
 
-  greaterThanOrEqualTo(number: BigNumber): boolean {
-    if (
-      this.base.greaterThanOrEqualTo(number.base) &&
-      this.exponent >= number.exponent
-    )
-      return true;
+  /** @description Check if a number is greater than or equal to the number passed through the method */
+  greaterThanOrEqualTo(number: BigNumber | Decimal | number): boolean {
+    if (!(number instanceof BigNumber)) number = new BigNumber(number);
 
-    return false;
+    if (this.exponent < number.exponent) return false;
+    if (this.exponent > number.exponent) return true;
+
+    return this.base.greaterThanOrEqualTo(number.base);
   }
 }

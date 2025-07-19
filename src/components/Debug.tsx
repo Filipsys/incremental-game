@@ -10,6 +10,9 @@ export const Debug: React.FC = () => {
     (state) => state.setTransactionValidationSpeedUpgrade,
   );
 
+  const slowTicks = useStore((state) => state.slowTicks);
+  const setSlowTicks = useStore((state) => state.setSlowTicks);
+
   return (
     <div
       style={{
@@ -21,6 +24,14 @@ export const Debug: React.FC = () => {
       }}
     >
       <p>Debug menu</p>
+
+      <div>
+        <input
+          type="checkbox"
+          onChange={(event) => setSlowTicks(event.target.checked)}
+        />
+        <label htmlFor="">Slow ticks</label>
+      </div>
 
       <div>
         <label htmlFor="">Funds: </label>

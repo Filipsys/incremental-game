@@ -69,11 +69,13 @@ function App() {
   );
 
   // Game tick loop
+  const slowTicks = useStore((state) => state.slowTicks);
+
   useEffect(() => {
-    const intervalLoop = setInterval(() => startTick(), 100);
+    const intervalLoop = setInterval(() => startTick(), slowTicks ? 1000 : 100);
 
     return () => clearInterval(intervalLoop);
-  }, [startTick]);
+  }, [slowTicks, startTick]);
 
   return (
     <div style={{ padding: "1em" }}>

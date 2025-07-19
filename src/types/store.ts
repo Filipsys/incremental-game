@@ -22,7 +22,7 @@ export interface GameStore {
   transactionChanges: [
     EpochTimeStamp,
     GameStore["transactionQueueMaxAmount"],
-  ][];
+  ][]; // Add a value every time the threshold is hit or the validation speed has changed
 
   supportedCurrencies: string[];
 
@@ -36,6 +36,9 @@ export interface GameStore {
 
   // Utils
   notation: "standard" | "scientific" | "engineering";
+
+  // Debug
+  slowTicks: boolean;
 }
 
 export interface Actions {
@@ -69,4 +72,7 @@ export interface Actions {
   // Utils
   changeNotation: (newNotation: GameStore["notation"]) => void;
   startTick: () => void;
+
+  // Debug
+  setSlowTicks: (setting: GameStore["slowTicks"]) => void;
 }
