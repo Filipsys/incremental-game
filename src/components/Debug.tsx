@@ -28,6 +28,7 @@ export const Debug: React.FC = () => {
       <div>
         <input
           type="checkbox"
+          checked={slowTicks}
           onChange={(event) => setSlowTicks(event.target.checked)}
         />
         <label htmlFor="">Slow ticks</label>

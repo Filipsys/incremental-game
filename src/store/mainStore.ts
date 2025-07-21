@@ -34,7 +34,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   notation: "standard",
 
-  slowTicks: false,
+  slowTicks: true,
 
   setTicks: (ticks: GameStore["ticks"]) => set({ ticks: ticks }),
 
@@ -99,19 +99,20 @@ export const useStore = create<GameStore & Actions>((set) => ({
   startTick: () =>
     set((state) => {
       const currentTime: EpochTimeStamp = Date.now();
+      const currentTransactionQueueMaxAmount =
+        state.transactionQueueMaxAmount > 1
+          ? state.transactionQueueMaxAmount / 2
+          : state.transactionQueueMaxAmount;
       let completedTransactionsCount = 0;
-      let usedTransactionQueueAcc = false;
 
+      // Count the accumulated transactions from the queue accumulation
+      let usedTransactionQueueAcc = false;
       if (state.transactionQueueAccumulator > 0) {
-        completedTransactionsCount += state.transactionQueueMaxAmount / 2;
+        completedTransactionsCount += currentTransactionQueueMaxAmount;
 
         usedTransactionQueueAcc = true;
       }
 
-      // I will probably want to remove this main loop feature
-      // and switch the array with something less resource-intensive
-      // at larger lengths.
-      //
       // Remove the pending transactions if their time has passed & add
       // the completed transaction count to the completed transaction amount
       let iterator = 0;
@@ -121,17 +122,17 @@ export const useStore = create<GameStore & Actions>((set) => ({
           .plus(state.transactionQueue[iterator])
           .greaterThan(currentTime)
       ) {
-        completedTransactionsCount += state.transactionQueueMaxAmount;
+        completedTransactionsCount += currentTransactionQueueMaxAmount;
 
         iterator++;
       }
 
-      const filteredQueue = state.transactionQueue.slice(0, iterator);
+      const filteredQueue = state.transactionQueue.slice(iterator);
 
       // Gather the total accumulated transactions from the current
       // transaction amount + the transaction amount from this tick
-      const totalAccumulated = state.transactionAccumulator.plus(
-        state.transactionsPerTick.add(0.02 * state.transactionSpeedUpgrades),
+      const totalAccumulated = new Decimal(completedTransactionsCount).add(
+        state.transactionsPerTick.mul(state.transactionSpeedUpgrades),
       );
 
       // Check if the accumulated transaction amount is higher than 1,
@@ -154,9 +155,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
-      console.log(
-        new BigNumber(10).multiply(state.instantTransferFee).toNamed(),
-      );
+      // console.log(
+      //   new BigNumber(10, 2n).multiply(state.instantTransferFee).toNamed(),
+      // );
       let newFunds: GameStore["funds"] = new BigNumber(0);
       if (completedTransactionsCount > 0) {
         newFunds = new BigNumber(10)
