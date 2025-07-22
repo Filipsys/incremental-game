@@ -63,9 +63,9 @@ export class BigNumber {
 
   toNamed(): string {
     if (this.exponent <= 6n) {
-      console.log(this.base.toString(), this.exponent);
       return this.base.pow(Number(this.exponent)).toString();
     }
+
     if (this.exponent <= 30n) {
       const mult =
         this.exponent % 3n === 1n ? 10 : this.exponent % 3n === 2n ? 100 : 1;
@@ -163,6 +163,10 @@ export class BigNumber {
   multiply(number: BigNumber | Decimal | number): BigNumber {
     if (!(number instanceof BigNumber)) {
       return BigNumber.createNormalised(this.base.mul(number), this.exponent);
+    }
+
+    if (this.exponent === number.exponent) {
+      return new BigNumber(this.base.mul(number.base), this.exponent);
     }
 
     return new BigNumber(

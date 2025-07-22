@@ -39,11 +39,14 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
-  cursor: pointer;
   transition: border-color 0.25s;
 
-  &:hover {
-    border-color: #646cff;
+  &:not(:disabled) {
+    cursor: pointer;
+
+    &:hover {
+      border-color: #646cff;
+    }
   }
 
   &:focus,
@@ -57,9 +60,11 @@ button {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }

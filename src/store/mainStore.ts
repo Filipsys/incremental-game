@@ -129,22 +129,25 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       const filteredQueue = state.transactionQueue.slice(iterator);
 
-      // Gather the total accumulated transactions from the current
-      // transaction amount + the transaction amount from this tick
-      const totalAccumulated = new Decimal(completedTransactionsCount).add(
-        state.transactionsPerTick.mul(state.transactionSpeedUpgrades),
+      // Gather the total accumulated transactions
+      // + the transaction amount from this tick
+      const totalAccumulated = state.transactionAccumulator.add(
+        state.transactionsPerTick.mul(
+          state.transactionSpeedUpgrades > 0
+            ? state.transactionSpeedUpgrades + 1
+            : 1,
+        ),
       );
 
-      // Check if the accumulated transaction amount is higher than 1,
-      // if so, create a new transaction, else, skip and add to accumulated
-      // transaction amount
+      // Check if the accumulated transaction amount is higher than
+      // the transaction queue max amount, if so, create a new
+      // transaction, else, skip and add to accumulated transaction amount
       if (
-        state.transactionAccumulator
-          .plus(totalAccumulated)
-          .greaterThanOrEqualTo(1)
+        totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
       ) {
-        // completedTransactionsCount =
-        //   completedTransactionsCount + totalAccumulated.floor().toNumber();
+        completedTransactionsCount +=
+          state.transactionQueueMaxAmount -
+          (state.transactionQueueMaxAmount % totalAccumulated.toNumber());
 
         totalAccumulated.minus(totalAccumulated.mod(1));
       } else {
@@ -155,14 +158,14 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
-      // console.log(
-      //   new BigNumber(10, 2n).multiply(state.instantTransferFee).toNamed(),
-      // );
       let newFunds: GameStore["funds"] = new BigNumber(0);
       if (completedTransactionsCount > 0) {
-        newFunds = new BigNumber(10)
-          .multiply(state.instantTransferFee)
-          .multiply(completedTransactionsCount);
+        // 10 - ten dollar payments
+        newFunds = new BigNumber(1)
+          // .multiply(completedTransactionsCount)
+          .multiply(state.instantTransferFee);
+
+        console.log(newFunds.toNamed());
       }
 
       // Check if the transaction queue is past the threshold, if so,
