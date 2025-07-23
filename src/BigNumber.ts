@@ -13,6 +13,8 @@ const removeEndVowel = (text: string) => {
 };
 
 export class BigNumber {
+  // Calculate base & exponent as base * 10^exponent
+  // Display as base * 10^(exponent - 1n) for actual reading
   base: customBigNumber["base"];
   exponent: customBigNumber["exponent"];
 
@@ -42,18 +44,18 @@ export class BigNumber {
   }
 
   toScientific(): string {
-    if (this.exponent <= 6n)
-      return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
+    if (this.exponent < 6n)
+      return `${this.base.mul(Math.pow(10, Number(this.exponent - 1n)))}`;
 
-    return `${this.base.toString().slice(0, 5)}e${this.exponent.toString()}`;
+    return `${this.base.toString().slice(0, 5)}e${(this.exponent - 1n).toString()}`;
   }
 
   toEngineering(): string {
     if (this.exponent <= 6n)
-      return `${this.base.mul(Math.pow(10, Number(this.exponent)))}`;
+      return `${this.base.mul(Math.pow(10, Number(this.exponent - 1n)))}`;
 
-    const exponentRemainder = this.exponent % 3n;
-    const engineeringExponent = this.exponent - exponentRemainder;
+    const exponentRemainder = (this.exponent - 1n) % 3n;
+    const engineeringExponent = this.exponent - 1n - exponentRemainder;
     const engineeringBase = this.base.mul(
       Math.pow(10, Number(exponentRemainder)),
     );
@@ -62,15 +64,20 @@ export class BigNumber {
   }
 
   toNamed(): string {
+    // Exponent is offset by 1n aka multiply by 10^(exponent - 1n)
     if (this.exponent <= 6n) {
-      return this.base.pow(Number(this.exponent)).toString();
+      return this.base.mul(Math.pow(10, Number(this.exponent - 1n))).toString();
     }
 
     if (this.exponent <= 30n) {
       const mult =
-        this.exponent % 3n === 1n ? 10 : this.exponent % 3n === 2n ? 100 : 1;
+        (this.exponent - 1n) % 3n === 1n
+          ? 10
+          : (this.exponent - 1n) % 3n === 2n
+            ? 100
+            : 1;
 
-      return `${this.base.mul(mult).toString().slice(0, 5)} ${UNDER_THIRTY[Math.floor(Number(this.exponent) / 3) - 1]}`;
+      return `${this.base.mul(mult).toString().slice(0, 5)} ${UNDER_THIRTY[Math.floor(Number(this.exponent - 1n) / 3) - 1]}`;
     }
 
     let namedNumber = "";
