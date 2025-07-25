@@ -120,7 +120,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         iterator < state.transactionQueue.length &&
         calculateValidationSpeed()
           .plus(state.transactionQueue[iterator])
-          .greaterThan(currentTime)
+          .lessThan(currentTime)
       ) {
         completedTransactionsCount += currentTransactionQueueMaxAmount;
 
@@ -139,17 +139,19 @@ export const useStore = create<GameStore & Actions>((set) => ({
         ),
       );
 
+      const newTransactionQueue: Transaction[] = [...filteredQueue];
+
       // Check if the accumulated transaction amount is higher than
       // the transaction queue max amount, if so, create a new
       // transaction, else, skip and add to accumulated transaction amount
       if (
         totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
       ) {
-        completedTransactionsCount +=
-          state.transactionQueueMaxAmount -
-          (state.transactionQueueMaxAmount % totalAccumulated.toNumber());
-
-        totalAccumulated.minus(totalAccumulated.mod(1));
+        // completedTransactionsCount +=
+        //   state.transactionQueueMaxAmount -
+        //   (state.transactionQueueMaxAmount % totalAccumulated.toNumber());
+        //
+        // totalAccumulated.minus(totalAccumulated.mod(1));
       } else {
         // state.setTransactionAccumulator(
         //   state.transactionAccumulator.plus(totalAccumulated),
@@ -162,10 +164,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
       if (completedTransactionsCount > 0) {
         // 10 - ten dollar payments
         newFunds = new BigNumber(1)
-          // .multiply(completedTransactionsCount)
+          .multiply(completedTransactionsCount)
           .multiply(state.instantTransferFee);
-
-        console.log(newFunds.toNamed());
       }
 
       // Check if the transaction queue is past the threshold, if so,
@@ -181,8 +181,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
       }
 
       // Add the new transactions to the transaction queue
-      const newTransactionQueue: Transaction[] = [...filteredQueue];
-
       if (
         totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
       ) {
@@ -206,9 +204,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
       return {
         ticks: state.ticks + 1,
         transactionsComplete: state.transactionsComplete.add(
-          new BigNumber(completedTransactionsCount, 1n),
+          completedTransactionsCount,
         ),
-        transactionsPending: new BigNumber(filteredQueue.length, 1n),
+        transactionsPending: new BigNumber(filteredQueue.length),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: newTransactionQueue,
         transactionQueueAccumulator: newTransactionQueueAccumulator,
