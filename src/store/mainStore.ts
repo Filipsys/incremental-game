@@ -3,13 +3,41 @@ import { BigNumber } from "../BigNumber";
 import { create } from "zustand";
 import { calculateValidationSpeed } from "../utils/utils";
 
-import type { GameStore, Actions, Transaction } from "../types/store";
+import type { GameStore, Actions } from "../types/store";
+
+const checkTransactionThreshold = (state: GameStore & Actions): void => {
+  if (state.transactionQueue.length > state.transactionQueueThreshold) {
+    state.increaseTransactionQueueMaxAmount();
+
+    state.setTransactionQueueThreshold(
+      Math.round(state.transactionQueueThreshold * 1.1),
+    );
+
+    state.resetTransactionQueue();
+  }
+};
+
+const addNewTransactionsToQueue = (
+  totalAccumulated: Decimal,
+  transactionQueueMaxAmount: number,
+  newTransactionQueue: number[],
+): void => {
+  if (totalAccumulated.greaterThanOrEqualTo(transactionQueueMaxAmount)) {
+    for (
+      let i = 0;
+      i < totalAccumulated.div(transactionQueueMaxAmount).floor().toNumber();
+      i++
+    ) {
+      newTransactionQueue.push(Date.now());
+    }
+  }
+};
 
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: new BigNumber(0, 1n),
   transactionsPending: new BigNumber(0, 1n),
-  transactionsPerTick: new Decimal(0.01), // 0.02
+  transactionsPerTick: new Decimal(0.02), // 0.02
   transactionAccumulator: new Decimal(0),
   transactionValidationSpeed: new Decimal(4000),
 
@@ -66,7 +94,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   setTransactionQueue: (queue: GameStore["transactionQueue"]) =>
     set({ transactionQueue: queue }),
-
   resetTransactionQueue: () => set({ transactionQueue: [] }),
 
   buyTransactionSpeedUpgrade: () =>
@@ -99,18 +126,20 @@ export const useStore = create<GameStore & Actions>((set) => ({
   startTick: () =>
     set((state) => {
       const currentTime: EpochTimeStamp = Date.now();
+
+      const tqMaxAmount = state.transactionQueueMaxAmount;
       const currentTransactionQueueMaxAmount =
-        state.transactionQueueMaxAmount > 1
-          ? state.transactionQueueMaxAmount / 2
-          : state.transactionQueueMaxAmount;
+        tqMaxAmount > 1 ? tqMaxAmount / 2 : tqMaxAmount;
+
       let completedTransactionsCount = 0;
 
       // Count the accumulated transactions from the queue accumulation
-      let usedTransactionQueueAcc = false;
-      if (state.transactionQueueAccumulator > 0) {
-        completedTransactionsCount += currentTransactionQueueMaxAmount;
-
-        usedTransactionQueueAcc = true;
+      if (
+        state.transactionQueueAccumulator >= currentTransactionQueueMaxAmount
+      ) {
+        completedTransactionsCount += Math.floor(
+          state.transactionQueueAccumulator / currentTransactionQueueMaxAmount,
+        );
       }
 
       // Remove the pending transactions if their time has passed & add
@@ -139,67 +168,26 @@ export const useStore = create<GameStore & Actions>((set) => ({
         ),
       );
 
-      const newTransactionQueue: Transaction[] = [...filteredQueue];
-
-      // Check if the accumulated transaction amount is higher than
-      // the transaction queue max amount, if so, create a new
-      // transaction, else, skip and add to accumulated transaction amount
-      if (
-        totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
-      ) {
-        // completedTransactionsCount +=
-        //   state.transactionQueueMaxAmount -
-        //   (state.transactionQueueMaxAmount % totalAccumulated.toNumber());
-        //
-        // totalAccumulated.minus(totalAccumulated.mod(1));
-      } else {
-        // state.setTransactionAccumulator(
-        //   state.transactionAccumulator.plus(totalAccumulated),
-        // );
-      }
-
       // Add the funds according to the completed transactions from this tick
       // maxTransferAmount is a placeholder. The amounts will be created later
       let newFunds: GameStore["funds"] = new BigNumber(0);
       if (completedTransactionsCount > 0) {
         // 10 - ten dollar payments
-        newFunds = new BigNumber(1)
+        newFunds = new BigNumber(10)
           .multiply(completedTransactionsCount)
           .multiply(state.instantTransferFee);
       }
 
       // Check if the transaction queue is past the threshold, if so,
       // increase the transactions amount in the queue
-      if (state.transactionQueue.length > state.transactionQueueThreshold) {
-        state.increaseTransactionQueueMaxAmount();
-
-        state.setTransactionQueueThreshold(
-          Math.round(state.transactionQueueThreshold * 1.1),
-        );
-
-        state.resetTransactionQueue();
-      }
+      checkTransactionThreshold(state);
 
       // Add the new transactions to the transaction queue
-      if (
-        totalAccumulated.greaterThanOrEqualTo(state.transactionQueueMaxAmount)
-      ) {
-        for (
-          let i = 0;
-          i <
-          Math.floor(
-            totalAccumulated.floor().toNumber() /
-              state.transactionQueueMaxAmount,
-          );
-          i++
-        ) {
-          newTransactionQueue.push(Date.now());
-        }
-      }
-
-      const newTransactionQueueAccumulator = usedTransactionQueueAcc
-        ? --state.transactionQueueAccumulator
-        : state.transactionQueueAccumulator;
+      addNewTransactionsToQueue(
+        totalAccumulated,
+        state.transactionQueueMaxAmount,
+        filteredQueue,
+      );
 
       return {
         ticks: state.ticks + 1,
@@ -208,8 +196,11 @@ export const useStore = create<GameStore & Actions>((set) => ({
         ),
         transactionsPending: new BigNumber(filteredQueue.length),
         transactionAccumulator: totalAccumulated.mod(1),
-        transactionQueue: newTransactionQueue,
-        transactionQueueAccumulator: newTransactionQueueAccumulator,
+        transactionQueue: filteredQueue,
+        transactionQueueAccumulator: totalAccumulated //issue
+          .div(currentTransactionQueueMaxAmount)
+          .floor()
+          .toNumber(),
         funds: state.funds.add(newFunds),
       };
     }),
