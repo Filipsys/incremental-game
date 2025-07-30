@@ -19,10 +19,17 @@ export interface GameStore {
   transactionQueueMaxAmount: number;
   transactionQueueThreshold: number;
   transactionQueue: Transaction[];
-  transactionChanges: [
-    EpochTimeStamp,
-    GameStore["transactionQueueMaxAmount"],
-  ][]; // Add a value every time the threshold is hit or the validation speed has changed
+  transactionQueueUpdates: {
+    timestamp: EpochTimeStamp;
+    transactionAmount: number;
+    transactionValue: number;
+    transactionValidationSpeed: Decimal;
+  }[];
+  transactionChanges: {
+    timestamp: EpochTimeStamp;
+
+    oldTransactionQueueMaxAmount: GameStore["transactionQueueMaxAmount"];
+  }[]; // Add a value every time the threshold is hit or the validation speed has changed
 
   supportedCurrencies: string[];
 
@@ -58,7 +65,12 @@ export interface Actions {
   ) => void;
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
   resetTransactionQueue: () => void;
-  // pushToTransactionQueue: (transaction: [Decimal, EpochTimeStamp]) => void;
+  addTransactionQueueUpdate: (
+    transactionAmount: number,
+    transactionValue: number,
+    transactionValidationSpeed: Decimal,
+    timestamp: EpochTimeStamp,
+  ) => void;
 
   buyTransactionSpeedUpgrade: () => void;
   setTransactionSpeedUpgrade: (amount: number) => void;

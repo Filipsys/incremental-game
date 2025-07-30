@@ -6,7 +6,14 @@ import { calculateValidationSpeed } from "../utils/utils";
 import type { GameStore, Actions } from "../types/store";
 
 const checkTransactionThreshold = (state: GameStore & Actions): void => {
-  if (state.transactionQueue.length > state.transactionQueueThreshold) {
+  if (state.transactionQueue.length >= state.transactionQueueThreshold) {
+    state.addTransactionQueueUpdate(
+      state.transactionQueue.length,
+      state.transactionQueueMaxAmount,
+      state.transactionValidationSpeed,
+      Date.now(),
+    );
+
     state.increaseTransactionQueueMaxAmount();
 
     state.setTransactionQueueThreshold(
@@ -48,6 +55,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
   transactionQueueAccumulator: 0,
   transactionQueueMaxAmount: 1,
   transactionQueueThreshold: 500,
+  transactionQueueUpdates: [],
   transactionQueue: [],
   transactionChanges: [],
 
@@ -83,7 +91,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       return {
         transactionQueueAccumulator:
-          Math.round(state.transactionQueueAccumulator / 2) + previousLength,
+          Math.floor(state.transactionQueueAccumulator / 2) +
+          (state.transactionQueueAccumulator % 2) +
+          previousLength,
         transactionQueueMaxAmount: state.transactionQueueMaxAmount * 2,
       };
     }),
@@ -96,6 +106,35 @@ export const useStore = create<GameStore & Actions>((set) => ({
     set({ transactionQueue: queue }),
   resetTransactionQueue: () => set({ transactionQueue: [] }),
 
+  addTransactionQueueUpdate: (
+    transactionAmount: number,
+    transactionValue: number,
+    transactionValidationSpeed: Decimal,
+  ) =>
+    set((state) => {
+      console.log([
+        ...state.transactionQueueUpdates,
+        {
+          transactionAmount,
+          transactionValue,
+          transactionValidationSpeed,
+          timestamp: Date.now(),
+        },
+      ]);
+
+      return {
+        transactionQueueUpdates: [
+          ...state.transactionQueueUpdates,
+          {
+            transactionAmount,
+            transactionValue,
+            transactionValidationSpeed,
+            timestamp: Date.now(),
+          },
+        ],
+      };
+    }),
+
   buyTransactionSpeedUpgrade: () =>
     set((state) => ({
       funds: state.funds.subtract(new BigNumber(40)),
@@ -106,16 +145,36 @@ export const useStore = create<GameStore & Actions>((set) => ({
       transactionSpeedUpgrades: state.transactionSpeedUpgrades + amount,
     })),
   buyTransactionValidationSpeedUpgrade: () =>
-    set((state) => ({
-      funds: state.funds.subtract(new BigNumber(120)),
-      transactionValidationSpeedUpgrades:
-        state.transactionValidationSpeedUpgrades + 1,
-    })),
+    set((state) => {
+      state.addTransactionQueueUpdate(
+        state.transactionQueue.length,
+        state.transactionQueueMaxAmount,
+        state.transactionValidationSpeed,
+        Date.now(),
+      );
+      console.log(state.transactionQueueUpdates);
+
+      return {
+        funds: state.funds.subtract(new BigNumber(120)),
+        transactionValidationSpeedUpgrades:
+          state.transactionValidationSpeedUpgrades + 1,
+      };
+    }),
   setTransactionValidationSpeedUpgrade: (amount: number) =>
-    set((state) => ({
-      transactionValidationSpeedUpgrades:
-        state.transactionValidationSpeedUpgrades + amount,
-    })),
+    set((state) => {
+      state.addTransactionQueueUpdate(
+        state.transactionQueue.length,
+        state.transactionQueueMaxAmount,
+        state.transactionValidationSpeed,
+        Date.now(),
+      );
+      console.log(state.transactionQueueUpdates);
+
+      return {
+        transactionValidationSpeedUpgrades:
+          state.transactionValidationSpeedUpgrades + amount,
+      };
+    }),
 
   changeNotation: (newNotation: GameStore["notation"]) =>
     set({ notation: newNotation }),
