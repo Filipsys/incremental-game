@@ -8,12 +8,19 @@ import type { GameStore, Actions } from "../types/store";
 const checkTransactionThreshold = (state: GameStore & Actions): void => {
   if (state.transactionQueue.length >= state.transactionQueueThreshold) {
     state.addTransactionQueueUpdate(
+      state.transactionsPerTick.mul(
+        state.transactionSpeedUpgrades > 0
+          ? state.transactionSpeedUpgrades + 1
+          : 1,
+      ),
+      state.transactionAccumulator,
       state.transactionQueue.length,
       state.transactionQueueMaxAmount,
       state.transactionValidationSpeed,
       Date.now(),
     );
 
+    state.resetTransactionAccumulator();
     state.increaseTransactionQueueMaxAmount();
 
     state.setTransactionQueueThreshold(
@@ -83,6 +90,8 @@ export const useStore = create<GameStore & Actions>((set) => ({
   setTransactionAccumulator: (
     transactionsAccumulated: GameStore["transactionAccumulator"],
   ) => set({ transactionAccumulator: transactionsAccumulated }),
+  resetTransactionAccumulator: () =>
+    set({ transactionAccumulator: new Decimal(0) }),
 
   increaseTransactionQueueMaxAmount: () =>
     set((state) => {
@@ -107,25 +116,19 @@ export const useStore = create<GameStore & Actions>((set) => ({
   resetTransactionQueue: () => set({ transactionQueue: [] }),
 
   addTransactionQueueUpdate: (
+    calculatedTransactionsPerTick: Decimal,
+    transactionAccumulator: Decimal,
     transactionAmount: number,
     transactionValue: number,
     transactionValidationSpeed: Decimal,
   ) =>
     set((state) => {
-      console.log([
-        ...state.transactionQueueUpdates,
-        {
-          transactionAmount,
-          transactionValue,
-          transactionValidationSpeed,
-          timestamp: Date.now(),
-        },
-      ]);
-
       return {
         transactionQueueUpdates: [
           ...state.transactionQueueUpdates,
           {
+            calculatedTransactionsPerTick,
+            transactionAccumulator,
             transactionAmount,
             transactionValue,
             transactionValidationSpeed,
@@ -147,12 +150,19 @@ export const useStore = create<GameStore & Actions>((set) => ({
   buyTransactionValidationSpeedUpgrade: () =>
     set((state) => {
       state.addTransactionQueueUpdate(
+        state.transactionsPerTick.mul(
+          state.transactionSpeedUpgrades > 0
+            ? state.transactionSpeedUpgrades + 1
+            : 1,
+        ),
+        state.transactionAccumulator,
         state.transactionQueue.length,
         state.transactionQueueMaxAmount,
         state.transactionValidationSpeed,
         Date.now(),
       );
-      console.log(state.transactionQueueUpdates);
+
+      state.resetTransactionAccumulator();
 
       return {
         funds: state.funds.subtract(new BigNumber(120)),
@@ -163,12 +173,19 @@ export const useStore = create<GameStore & Actions>((set) => ({
   setTransactionValidationSpeedUpgrade: (amount: number) =>
     set((state) => {
       state.addTransactionQueueUpdate(
+        state.transactionsPerTick.mul(
+          state.transactionSpeedUpgrades > 0
+            ? state.transactionSpeedUpgrades + 1
+            : 1,
+        ),
+        state.transactionAccumulator,
         state.transactionQueue.length,
         state.transactionQueueMaxAmount,
         state.transactionValidationSpeed,
         Date.now(),
       );
-      console.log(state.transactionQueueUpdates);
+
+      state.resetTransactionAccumulator();
 
       return {
         transactionValidationSpeedUpgrades:

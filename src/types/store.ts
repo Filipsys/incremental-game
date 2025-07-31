@@ -21,6 +21,8 @@ export interface GameStore {
   transactionQueue: Transaction[];
   transactionQueueUpdates: {
     timestamp: EpochTimeStamp;
+    calculatedTransactionsPerTick: Decimal;
+    transactionAccumulator: Decimal;
     transactionAmount: number;
     transactionValue: number;
     transactionValidationSpeed: Decimal;
@@ -58,6 +60,7 @@ export interface Actions {
   setTransactionAccumulator: (
     accumulatedTransactions: GameStore["transactionAccumulator"],
   ) => void;
+  resetTransactionAccumulator: () => void;
 
   increaseTransactionQueueMaxAmount: () => void;
   setTransactionQueueThreshold: (
@@ -66,6 +69,8 @@ export interface Actions {
   setTransactionQueue: (queue: GameStore["transactionQueue"]) => void;
   resetTransactionQueue: () => void;
   addTransactionQueueUpdate: (
+    calculatedTransactionsPerTick: Decimal,
+    transactionAccumulator: Decimal,
     transactionAmount: number,
     transactionValue: number,
     transactionValidationSpeed: Decimal,
