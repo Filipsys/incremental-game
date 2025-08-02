@@ -45,20 +45,18 @@ export class BigNumber {
 
   toScientific(): string {
     if (this.exponent < 6n)
-      return `${this.base.mul(Math.pow(10, Number(this.exponent - 1n)))}`;
+      return `${this.base.mul(10 ** Number(this.exponent - 1n))}`;
 
     return `${this.base.toString().slice(0, 5)}e${(this.exponent - 1n).toString()}`;
   }
 
   toEngineering(): string {
     if (this.exponent <= 6n)
-      return `${this.base.mul(Math.pow(10, Number(this.exponent - 1n)))}`;
+      return `${this.base.mul(10 ** Number(this.exponent - 1n))}`;
 
     const exponentRemainder = (this.exponent - 1n) % 3n;
     const engineeringExponent = this.exponent - 1n - exponentRemainder;
-    const engineeringBase = this.base.mul(
-      Math.pow(10, Number(exponentRemainder)),
-    );
+    const engineeringBase = this.base.mul(10 ** Number(exponentRemainder));
 
     return `${engineeringBase.toString().slice(0, 5)}e${engineeringExponent}`;
   }
@@ -66,7 +64,7 @@ export class BigNumber {
   toNamed(): string {
     // Exponent is offset by 1n aka multiply by 10^(exponent - 1n)
     if (this.exponent <= 6n) {
-      return this.base.mul(Math.pow(10, Number(this.exponent - 1n))).toString();
+      return this.base.mul(10 ** Number(this.exponent - 1n)).toString();
     }
 
     if (this.exponent <= 30n) {
@@ -102,7 +100,7 @@ export class BigNumber {
         (newFragment[1].includes("s") || newFragment[1].includes("x"))
       ) {
         lastConnectors = newFragment[1];
-        return currentString + "s" + newFragment[0];
+        return `${currentString}s${newFragment[0]}`;
       }
 
       let connector = "";
@@ -153,7 +151,7 @@ export class BigNumber {
     }
 
     namedNumber = removeEndVowel(namedNumber);
-    return `${this.base.toString().slice(0, 5)} ${(namedNumber += "illion")}`;
+    return `${this.base.toString().slice(0, 5)} ${namedNumber}illion`;
   }
 
   /** @description Returns the current notation string according to the store. */

@@ -77,7 +77,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
   notation: "standard",
 
-  slowTicks: true,
+  slowTicks: true, // Debugging
 
   setTicks: (ticks: GameStore["ticks"]) => set({ ticks: ticks }),
 
@@ -211,7 +211,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
 
       // Count the accumulated transactions from the queue accumulation
       if (
-        state.transactionQueueAccumulator >= currentTransactionQueueMaxAmount
+        state.transactionQueueAccumulator > currentTransactionQueueMaxAmount
       ) {
         completedTransactionsCount += Math.floor(
           state.transactionQueueAccumulator / currentTransactionQueueMaxAmount,
@@ -252,6 +252,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
         newFunds = new BigNumber(10)
           .multiply(completedTransactionsCount)
           .multiply(state.instantTransferFee);
+
+        console.log(newFunds.currentNotation());
+        console.log(state.funds.add(newFunds).currentNotation());
       }
 
       // Check if the transaction queue is past the threshold, if so,
@@ -273,7 +276,7 @@ export const useStore = create<GameStore & Actions>((set) => ({
         transactionsPending: new BigNumber(filteredQueue.length),
         transactionAccumulator: totalAccumulated.mod(1),
         transactionQueue: filteredQueue,
-        transactionQueueAccumulator: totalAccumulated //issue
+        transactionQueueAccumulator: totalAccumulated // issue
           .div(currentTransactionQueueMaxAmount)
           .floor()
           .toNumber(),
