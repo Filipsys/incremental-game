@@ -183,7 +183,7 @@ export class BigNumber {
   // These might lose precision if the larger exponent is picked
   add(number: BigNumber | Decimal | number): BigNumber {
     if (!(number instanceof BigNumber)) {
-      return new BigNumber(this.base.add(number), this.exponent);
+      return new BigNumber(this.base.add(number), this.exponent); // Fix
     }
 
     if (this.exponent === number.exponent) {
@@ -193,13 +193,18 @@ export class BigNumber {
     let newBase: Decimal;
     const exponentDifference = this.exponent - number.exponent;
 
-    if (exponentDifference > 0n) {
-      const scale = new Decimal(10).pow(exponentDifference.toString());
-      newBase = this.base.add(number.base.div(scale));
-    } else {
-      const scale = new Decimal(10).pow(-exponentDifference.toString());
-      newBase = this.base.div(scale).add(number.base);
-    }
+    return new BigNumber(
+      this.base.mul(Math.abs(Number(exponentDifference))).add(number.base),
+      this.exponent,
+    );
+
+    // if (exponentDifference > 0n) {
+    //   const scale = new Decimal(10).pow(exponentDifference.toString());
+    //   newBase = this.base.add(number.base.div(scale));
+    // } else {
+    //   const scale = new Decimal(10).pow(-exponentDifference.toString());
+    //   newBase = this.base.div(scale).add(number.base);
+    // }
 
     return new BigNumber(newBase, this.exponent);
   }
