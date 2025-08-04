@@ -183,30 +183,31 @@ export class BigNumber {
   // These might lose precision if the larger exponent is picked
   add(number: BigNumber | Decimal | number): BigNumber {
     if (!(number instanceof BigNumber)) {
-      return new BigNumber(this.base.add(number), this.exponent); // Fix
+      const decimal = number instanceof Decimal ? number : new Decimal(number);
+      return new BigNumber(this.base.add(decimal), this.exponent);
     }
 
     if (this.exponent === number.exponent) {
       return new BigNumber(this.base.add(number.base), this.exponent);
     }
 
-    let newBase: Decimal;
     const exponentDifference = this.exponent - number.exponent;
 
+    if (exponentDifference > 0n) {
+      return new BigNumber(
+        this.base.add(
+          number.base.div(new Decimal(10).pow(exponentDifference.toString())),
+        ),
+        this.exponent,
+      );
+    }
+
     return new BigNumber(
-      this.base.mul(Math.abs(Number(exponentDifference))).add(number.base),
-      this.exponent,
+      this.base
+        .div(new Decimal(10).pow((-exponentDifference).toString()))
+        .add(number.base),
+      number.exponent,
     );
-
-    // if (exponentDifference > 0n) {
-    //   const scale = new Decimal(10).pow(exponentDifference.toString());
-    //   newBase = this.base.add(number.base.div(scale));
-    // } else {
-    //   const scale = new Decimal(10).pow(-exponentDifference.toString());
-    //   newBase = this.base.div(scale).add(number.base);
-    // }
-
-    return new BigNumber(newBase, this.exponent);
   }
 
   subtract(number: BigNumber | Decimal | number): BigNumber {
