@@ -47,6 +47,21 @@ const addNewTransactionsToQueue = (
   }
 };
 
+const calculateNewFunds = (
+  state: GameStore & Actions,
+  completedTransactionsCount: number,
+): GameStore["funds"] => {
+  let newFunds: GameStore["funds"] = new BigNumber(0);
+  if (completedTransactionsCount > 0) {
+    // 10 - ten dollar payments
+    newFunds = new BigNumber(10)
+      .multiply(completedTransactionsCount)
+      .multiply(state.instantTransferFee);
+  }
+
+  return newFunds;
+};
+
 export const useStore = create<GameStore & Actions>((set) => ({
   ticks: 0,
   transactionsComplete: new BigNumber(0, 1n),
@@ -244,19 +259,6 @@ export const useStore = create<GameStore & Actions>((set) => ({
         ),
       );
 
-      // Add the funds according to the completed transactions from this tick
-      // maxTransferAmount is a placeholder. The amounts will be created later
-      let newFunds: GameStore["funds"] = new BigNumber(0);
-      if (completedTransactionsCount > 0) {
-        // 10 - ten dollar payments
-        newFunds = new BigNumber(10)
-          .multiply(completedTransactionsCount)
-          .multiply(state.instantTransferFee);
-
-        console.log(newFunds.currentNotation());
-        console.log(state.funds.add(newFunds).currentNotation());
-      }
-
       // Check if the transaction queue is past the threshold, if so,
       // increase the transactions amount in the queue
       checkTransactionThreshold(state);
@@ -267,6 +269,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
         state.transactionQueueMaxAmount,
         filteredQueue,
       );
+
+      // Add the funds according to the completed transactions from this tick
+      // maxTransferAmount is a placeholder. The amounts will be created later
 
       return {
         ticks: state.ticks + 1,
@@ -280,7 +285,9 @@ export const useStore = create<GameStore & Actions>((set) => ({
           .div(currentTransactionQueueMaxAmount)
           .floor()
           .toNumber(),
-        funds: state.funds.add(newFunds),
+        funds: state.funds.add(
+          calculateNewFunds(state, completedTransactionsCount),
+        ),
       };
     }),
 }));
