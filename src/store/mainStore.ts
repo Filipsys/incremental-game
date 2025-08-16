@@ -221,6 +221,31 @@ export const useStore = create<GameStore & Actions>((set) => ({
       const tqMaxAmount = state.transactionQueueMaxAmount;
       const currentTransactionQueueMaxAmount =
         tqMaxAmount > 1 ? tqMaxAmount / 2 : tqMaxAmount;
+      const shouldFreezeCurrentTransactions =
+        state.transactionQueueUpdates.length > 0;
+
+      if (shouldFreezeCurrentTransactions) {
+        const oldestUpdate = state.transactionQueueUpdates[0];
+
+        if (
+          Decimal(oldestUpdate.transactionAmount)
+            .sub(oldestUpdate.calculatedTransactionsPerTick)
+            .greaterThan(0)
+        ) {
+          oldestUpdate.transactionAmount = Decimal(
+            oldestUpdate.transactionAmount,
+          )
+            .sub(oldestUpdate.calculatedTransactionsPerTick)
+            .toNumber();
+        }
+
+        return {
+          transactionQueueUpdates: [
+            oldestUpdate,
+            ...state.transactionQueueUpdates.slice(1),
+          ],
+        };
+      }
 
       let completedTransactionsCount = 0;
 
