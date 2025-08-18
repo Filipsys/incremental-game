@@ -227,16 +227,14 @@ export const useStore = create<GameStore & Actions>((set) => ({
       if (shouldFreezeCurrentTransactions) {
         const oldestUpdate = state.transactionQueueUpdates[0];
 
-        if (
-          Decimal(oldestUpdate.transactionAmount)
-            .sub(oldestUpdate.calculatedTransactionsPerTick)
-            .greaterThan(0)
-        ) {
-          oldestUpdate.transactionAmount = Decimal(
-            oldestUpdate.transactionAmount,
-          )
-            .sub(oldestUpdate.calculatedTransactionsPerTick)
-            .toNumber();
+        const getOldestUpdateCalcTransactionsPerTick = () =>
+          Decimal(oldestUpdate.transactionAmount).sub(
+            oldestUpdate.calculatedTransactionsPerTick,
+          );
+
+        if (getOldestUpdateCalcTransactionsPerTick().greaterThan(0)) {
+          oldestUpdate.transactionAmount =
+            getOldestUpdateCalcTransactionsPerTick().toNumber();
         }
 
         return {
