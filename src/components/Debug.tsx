@@ -9,6 +9,9 @@ export const Debug: React.FC = () => {
   const setTransactionValidationSpeed = useStore(
     (state) => state.setTransactionValidationSpeedUpgrade,
   );
+  const transactionQueueUpdates = useStore(
+    (state) => state.transactionQueueUpdates,
+  );
 
   const slowTicks = useStore((state) => state.slowTicks);
   const setSlowTicks = useStore((state) => state.setSlowTicks);
@@ -79,6 +82,13 @@ export const Debug: React.FC = () => {
           }}
         />
       </div>
+
+      <p>Transaction queue updates:</p>
+      <pre>
+        {transactionQueueUpdates.map((object) =>
+          JSON.stringify(object, null, 2),
+        )}
+      </pre>
     </div>
   );
 };
