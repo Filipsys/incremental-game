@@ -232,9 +232,17 @@ export const useStore = create<GameStore & Actions>((set) => ({
             oldestUpdate.calculatedTransactionsPerTick,
           );
 
-        if (getOldestUpdateCalcTransactionsPerTick().greaterThan(0)) {
+        if (getOldestUpdateCalcTransactionsPerTick().greaterThanOrEqualTo(0)) {
           oldestUpdate.transactionAmount =
             getOldestUpdateCalcTransactionsPerTick().toNumber();
+
+          if (oldestUpdate.transactionAmount === 0) {
+            return {
+              transactionQueueUpdates: [
+                ...state.transactionQueueUpdates.slice(1),
+              ],
+            };
+          }
         }
 
         return {
