@@ -80,8 +80,7 @@ function App() {
   return (
     <div style={{ padding: "1em" }}>
       <Debug />
-
-      <pre style={{ fontFamily: "monospace", margin: 0 }}>
+      {/*<pre style={{ fontFamily: "monospace", margin: 0 }}>
         <Stage1
           data={[
             "s",
@@ -106,10 +105,8 @@ function App() {
             "s",
           ]}
         />
-      </pre>
-
+      </pre>*/}
       <NotationPicker />
-
       <p>
         Ticks: {ticks}
         <br />
@@ -141,7 +138,6 @@ function App() {
         <br />
         Transaction validation speed: {transactionValidationSpeedUpgrades}
       </p>
-
       <button
         type="button"
         onClick={() => buyTransactionSpeedUpgrade()}
@@ -149,7 +145,7 @@ function App() {
       >
         <p>Transaction speed upgrade</p>
         <p>40 EUR</p>
-      </button>
+      </button>{" "}
       <button
         type="button"
         onClick={() => buyTransactionValidationSpeed()}

@@ -228,16 +228,32 @@ export const useStore = create<GameStore & Actions>((set) => ({
         const oldestUpdate = state.transactionQueueUpdates[0];
 
         const getOldestUpdateCalcTransactionsPerTick = () =>
-          Decimal(oldestUpdate.transactionAmount).sub(
-            oldestUpdate.calculatedTransactionsPerTick,
-          );
+          Decimal(oldestUpdate.transactionAmount)
+            .sub(oldestUpdate.calculatedTransactionsPerTick)
+            .sub(oldestUpdate.transactionAccumulator);
 
         if (getOldestUpdateCalcTransactionsPerTick().greaterThanOrEqualTo(0)) {
           oldestUpdate.transactionAmount =
             getOldestUpdateCalcTransactionsPerTick().toNumber();
+          // oldestUpdate.transactionAccumulator = new Decimal(0);
 
           if (oldestUpdate.transactionAmount === 0) {
             return {
+              transactionQueueUpdates: [
+                ...state.transactionQueueUpdates.slice(1),
+              ],
+            };
+          }
+
+          if (
+            oldestUpdate.transactionAccumulator
+              .add(oldestUpdate.transactionAmount)
+              .lessThan(oldestUpdate.calculatedTransactionsPerTick)
+          ) {
+            return {
+              transactionAccumulator: state.transactionAccumulator.add(
+                oldestUpdate.transactionAccumulator,
+              ),
               transactionQueueUpdates: [
                 ...state.transactionQueueUpdates.slice(1),
               ],
